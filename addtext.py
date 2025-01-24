@@ -1,3 +1,4 @@
+# type: ignore
 # Importing the PIL library
 from PIL import Image
 from PIL import ImageDraw
@@ -421,7 +422,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
 
     # Scale it up to fit.
     img = img.resize((1120,1560),resample=Image.Dither.NONE)
-    I1 = ImageDraw.Draw(img)
+    ImageDraw1 = ImageDraw.Draw(img)
     
     # Next, the power and health. The numbers.
     # variable stat checker
@@ -441,10 +442,10 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
         # end for
     # end if
     if normalPower:
-        shadowText(I1,148,1331,str(int(info["power"])),statFont,anchor="la")
+        shadowText(ImageDraw1,148,1331,str(int(info["power"])),statFont,anchor="la")
     # end if
     
-    shadowText(I1,968,1331,str(int(info["health"])),statFont,anchor="ra")
+    shadowText(ImageDraw1,968,1331,str(int(info["health"])),statFont,anchor="ra")
 
     # Next, we will add the sigils.
     sigilx = 150
@@ -645,8 +646,8 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
         #end if
 
         # print name
-        l = I1.textlength(isig+": ",boldFont)
-        I1.text((sigilx+80, sigily+textOffset),
+        l = ImageDraw1.textlength(isig+": ",boldFont)
+        ImageDraw1.text((sigilx+80, sigily+textOffset),
                 isig+": ",
                 fill=textColor,
                 font=boldFont,
@@ -655,7 +656,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
 
         # print first line of sigil text
         # (might be the only line)
-        I1.text((sigilx+80+l, sigily+textOffset),
+        ImageDraw1.text((sigilx+80+l, sigily+textOffset),
                 textLines[0],
                 fill=textColor,
                 font=textFont,
@@ -665,7 +666,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
         if singleLine == False:
             # skip the first one
             for i in range(n)[1:]:
-                I1.text((sigilx+80, sigily+textOffset+40*i),
+                ImageDraw1.text((sigilx+80, sigily+textOffset+40*i),
                 textLines[i],
                 fill=textColor,
                 font=textFont,
@@ -700,7 +701,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
         n = len(textLines)
 
         for i in textLines:
-            I1.text((sigilx,sigily),
+            ImageDraw1.text((sigilx,sigily),
             i,
             fill=(0,0,0),
             font=textFont,
@@ -724,7 +725,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
             tribeString += " "+i
         # end for
     # end if
-    I1.text((151,1295),
+    ImageDraw1.text((151,1295),
             tribeString,
             fill=colorSample,
             font=textFont,
@@ -736,7 +737,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
         #ftext = info["flavor"]
         #print(italFont.getlength(ftext))
         
-        I1.text((561,sigily),
+        ImageDraw1.text((561,sigily),
                 info["flavor"],
                 fill=(0,0,0),
                 font=italFont,
@@ -745,13 +746,13 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
     #end if
 
     # Name the card.
-    shadowText(I1,136,136,info["name"],nameFont)
+    shadowText(ImageDraw1,136,136,info["name"],nameFont)
 
     # Please, sign your work.
     artistName = info["artist"]
     if artistName != "nan":
         dumbString = artistName + "o"
-        shadowText(I1,560,1375,"Illus. "+artistName,artsFont,anchor="ma")
+        shadowText(ImageDraw1,560,1375,"Illus. "+artistName,artsFont,anchor="ma")
     else:
         print("no artist credit found for "+info["name"])
 
@@ -760,7 +761,7 @@ def printCard(info,savePath="output",show=False,prefix="01x 001 ",fmt="",liveUpd
         #print(fmt)
         tx = cfg.getint("text.format","GAMEFORMAT_X")
         ty = cfg.getint("text.format","GAMEFORMAT_Y")
-        I1.text((tx,ty),fmt,fill=colorSample,font=formatFont,anchor="ma")
+        ImageDraw1.text((tx,ty),fmt,fill=colorSample,font=formatFont,anchor="ma")
     #end if
         
     # uhhh yeah
