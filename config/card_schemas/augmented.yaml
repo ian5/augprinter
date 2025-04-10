@@ -1,0 +1,104 @@
+card size: [112,156] # how large is the lores card, before it's brought to the final size
+scale factor: 10 # how much bigger does it get when we make it bigger
+text styles:
+  name font:
+    - 
+      font: assets/fonts/Poly-Regular.ttf
+      size: 63
+      color: [0,0,0]
+      offset: [5,5]
+    - 
+      font: assets/fonts/Poly-Regular.ttf
+      size: 63
+  stat font:
+    - # multipart fonts are rendered in order; this allows some basic text effects to be baked into fonts
+      font: assets/fonts/Cambria.otf
+      size: 109
+      color: [0,0,0]
+      offset: [5,5]
+    -
+      font: assets/fonts/Cambria.otf
+      size: 109
+  text font:
+    -
+      font: assets/fonts/Cambria.otf
+      size: 33
+  bold font:
+    -
+      font: assets/fonts/Cambria-Bold.ttf
+      size: 33
+  italic font:
+    -
+      font: assets/fonts/Cambria-Italic.ttf
+      size: 33
+  art credit font:
+    -
+      font: assets/fonts/Poly-Regular.ttf
+      size: 42
+  format font:
+    -
+      font: assets/fonts/Cambria.otf
+      size: 20
+rendersteps:
+  lores:
+    - !ImagePaste
+      name: background 
+      default: assets/builtin/background_error.png
+      position: [13,27]
+      flags: {warn on default, cache}
+    - !ImagePaste 
+      name: portrait
+      default: assets/builtin/portrait_error.png
+      position: [13,27]
+      flags: {warn on default}
+    - !ImagePaste 
+      name: frame
+      default: assets/builtin/frame_error.png
+      position: [0,0]
+      flags: {warn on default, cache}
+    - !ImageArray
+      name: costs
+      default: assets/builtin/costerror.png
+      position: [99,18]
+      spacing: 2
+      flags: {cache}
+  hires: 
+    - !CardBody
+      name: mainbody
+      position: [150,920]
+      size: []
+body items:
+  Sigil:
+    text styles:
+      title: bold font
+      body: text font
+  Trait:
+    text styles:
+      body: text font
+  FlavorText:
+    text styles:
+      body: italic font
+
+
+# The assumptions system is the most complex part of the configuration; it's designed to allow you to control
+# some of the behavior of the printer without having to dive into the python
+# Hopefully the included assumptions should make things clear enough, but TODO: actually make the docs for this
+#assumption_files: [augmented_assumptions.yaml]
+assumptions:
+  -
+    operation: and
+    conditions:
+      temple: beast
+      rarity:
+        - common
+        - side deck
+    effects:
+      frame: assets/frames/frame_common_beast.png
+  - 
+    conditions:
+      tribe:
+        and:
+          - mox
+          - conduit
+    effects:
+      decal: (assets/misc/gems/gemconduit.png, (50, 840))

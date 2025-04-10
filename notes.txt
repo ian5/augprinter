@@ -1,2 +1,3 @@
 - There is now a builtin folder for assets that have nothing to do with specific cards- many of these assets have been changed slightly to allow for More Eleganter options
 - Separators and conditionals are now drawn the same; both start from the leftmost side of the card (separators used to start from the left of the text area)
+- The crossbars for conduits and mox are decals now 
