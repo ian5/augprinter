@@ -37,4 +37,5 @@ assemble_card(portrait='assets/art/Skel-e-latcher.png', background='assets/bg/bg
                   HorizontalRule(),
                   FlavorText('Full of neurotoxins.')
               ]).show()
+
 input('pause lol')

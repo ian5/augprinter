@@ -68,6 +68,7 @@ class Sigil(BodyItem): #MARK: Sigil
         self.bodyfont = self.font(bodyfont, 'Sigil', 'body')
         self.titlewidth = self.titlefont.get_length(self.name + ': ')
         self.text = text 
+        self.lines = self.bodyfont.wrap(self.text, w = 750, first_line_offset=self.titlewidth)
         self.outlineicon = outlineicon
     
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int], blacked: bool = False) -> int:
@@ -88,21 +89,19 @@ class Sigil(BodyItem): #MARK: Sigil
         text_color = (255,255,255) if self.blacked else (0,0,0) # lol 
 
         sigil_name = self.name + ': '
-        titlewidth = self.titlefont.get_length(sigil_name)
-        self.bodyfont.wrap(self.text, w = 750, first_line_offset=titlewidth)
 
         # Render the sigil text
-        if len(self.text) == 1: # vertically center single line text
+        if len(self.lines) == 1: # vertically center single line text
             self.titlefont.print_line(self.name+": ", draw, (x+80, y+15), fill=text_color, anchor="la")
-            self.bodyfont.print_line(self.text[0], draw, (x+80+self.titlewidth, y+15), fill=text_color, anchor="la") # text
+            self.bodyfont.print_line(self.lines[0], draw, (x+80+self.titlewidth, y+15), fill=text_color, anchor="la") # text
         else:
             self.titlefont.print_line(self.name+": ", draw, (x+80, y-5),  fill=text_color, anchor="la") # name
-            for i, line in enumerate(self.text):
+            for i, line in enumerate(self.lines):
                 self.bodyfont.print_line(line, draw, (x+80+self.titlewidth if i==0 else x+80, y-5+40*i),  fill=text_color, anchor="la") # text
         return self.get_height(y)
 
     def get_height(self, y : int) -> int:
-        return 40*max(2, len(self.text)) # 40px per line of text, sigils are a minimum of 2 lines tall
+        return 40*max(2, len(self.lines)) # 40px per line of text, sigils are a minimum of 2 lines tall
 
 
 class PixelAligned(BodyItem): #MARK: PixelAligned
@@ -158,8 +157,8 @@ class InfoBox(PixelAligned): #MARK: InfoBox
         x, y, w, h = box
         container = open_image_cached('assets/builtin/darkbox.png')
         py = self.pixel_align(y)
-        image.alpha_composite(container.crop((0,0,container.width,self.content_height+30)), dest=(0, py))
-        image.alpha_composite(open_image_cached('assets/builtin/darkbox_end.png'), dest=(0, self.pixel_align(self.content_height+py+10)))
+        image.alpha_composite(container.crop((0,0,container.width,self.content_height+30)), (0, py))
+        image.alpha_composite(open_image_cached('assets/builtin/darkbox_end.png'), (0, self.pixel_align(self.content_height+py+10)))
 
         image.alpha_composite(self.contents,(x,py+20))
         return self.get_height(y)

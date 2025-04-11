@@ -181,4 +181,4 @@ class CardBody(RenderStep): #MARK: CardBody
         sigilx, sigily = self.position
 
         for o in children:
-            sigily += o.draw(image, self.position+self.size)
+            sigily += o.draw(image, (sigilx, sigily)+self.size)
