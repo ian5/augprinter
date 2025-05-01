@@ -1,3 +1,17 @@
-/output
-addtext.py
+# generated
+output/
+
+# vscode
+.vscode/
+
+# python stuff
+.venv/
 __pycache__/
+*.pyc
+
+# old code that i left in the workspace for convenience
+addtext.py
+printerconfig.ini
+
+# pytest framework
+.pytest_cache

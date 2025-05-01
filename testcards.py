@@ -1,6 +1,6 @@
-from printcore import assemble_card
-from bodyitems import Sigil, Conditional, InfoBox, HorizontalRule, Trait, FlavorText
-from config import fonts
+from augprint.printcore import assemble_card
+from augprint.bodyitems import Sigil, Conditional, InfoBox, HorizontalRule, Trait, FlavorText
+from augprint.config import fonts
 
 assemble_card(portrait='assets/art/Skeleton.png', background='assets/bg/bg_common_undead.png', frame='assets/frames/frame_common_undead.png',
               mainbody=[
