@@ -1,3 +1,4 @@
 ---
 format_schema: 'card_schemas/augmented.yaml'
+format_cards: 'test_cards.yaml'
 ...
