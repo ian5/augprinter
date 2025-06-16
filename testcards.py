@@ -1,6 +1,6 @@
-from augprint.printcore import assemble_card
-from augprint.bodyitems import Sigil, Conditional, InfoBox, HorizontalRule, Trait, FlavorText
-from augprint.config import fonts
+from printer.printcore import assemble_card
+from printer.bodyitems import Sigil, Conditional, InfoBox, HorizontalRule, Trait, FlavorText
+from printer.config import fonts
 
 assemble_card(portrait='assets/art/Skeleton.png', background='assets/bg/bg_common_undead.png', frame='assets/frames/frame_common_undead.png',
               mainbody=[
@@ -8,9 +8,9 @@ assemble_card(portrait='assets/art/Skeleton.png', background='assets/bg/bg_commo
                 #HorizontalRule(),
                 #Trait('This card cannot be sacrificed.'),
                 Conditional('assets/misc/TRANSFORM.png', []),
-                Sigil('Brittle', 'assets/sigils/Brittle.png', 'If this card attacked this turn, it perishes during your end step.', fonts['bold font'], fonts['text font']), 
+                Sigil('Brittle', 'assets/sigils/Brittle.png', 'If this card attacked this turn, it perishes during your end step.'), 
                 InfoBox([
-                    Sigil('Airborne', 'assets/sigils/Airborne.png', "When this card would strike another, it instead strikes that card's space directly.", fonts['bold font'], fonts['text font'], blacked=True)
+                    Sigil('Airborne', 'assets/sigils/Airborne.png', "When this card would strike another, it instead strikes that card's space directly.", blacked=True)
                 ]),
                 #HorizontalRule(),
                 #FlavorText('A frail and spooky mass of bones.')
@@ -19,7 +19,7 @@ assemble_card(portrait='assets/art/Skeleton.png', background='assets/bg/bg_commo
 
 assemble_card(portrait='assets/art/Child 13.png', background='assets/bg/bg_rare_beast.png', frame='assets/frames/frame_rare_beast.png', artist='Raytheon',
               tribes=['Hooved', 'Cryptid'], tier='Rare', temple='Beast', power=0, health=1, name='Child 13', costs=[('assets/cost/blood.png', 1, False)],
-              mainbody = [
+              mainbody = [  
                   Sigil('Many Lives', 'assets/sigils/Many Lives.png', "This card does not perish when sacrificed."),
                   Conditional('assets/misc/SACLOOP.png'),
                   Sigil('Empowered', 'assets/sigils/Empowered.png', "This card has 2 more power."),
