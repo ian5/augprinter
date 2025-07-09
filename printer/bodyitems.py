@@ -6,14 +6,16 @@ from printer import text
 from printer.loaders import open_image_cached, get_image
 
 class BodyItem:
-    # We need this class attribute to set it per class later
-    fonts = {}
-
     # Expose a method to set class default fonts, so that the config module
     # doesn't have to play with the attributes directly
     @classmethod
     def set_default_font(cls, name : str, font : text.TextStyle) -> None:
         cls.fonts[name] = font
+
+    # Each subclass needs its own set of default fonts
+    def __init_subclass__(cls):
+        # So we make a new dictionary for each subclass
+        cls.fonts = {}
 
     # You can also change a specific instance's font, if you'd like
     def set_font(self, font: text.TextStyle | None, name : str) -> None:
