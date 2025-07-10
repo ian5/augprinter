@@ -320,3 +320,7 @@ class FlavorText(BodyItem): #MARK: FlavorText
     def get_height(self, box: tuple[int, int, int ,int]) -> int:
         # Each line of text is 40px tall
         return 40*len(self.text)
+
+# A dictionary with every available body item has turned out to be worth having
+# in a few places, so we do that here instead of in several different places.
+body_items = {i.__name__: i for i in BodyItem.__subclasses__()}

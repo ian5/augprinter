@@ -68,18 +68,13 @@ def reload():
             # Fetch each text style
     for name, style in format_schema['text styles'].items():
         # ...instantiate it, and add it to our font registry
-        fonts[name] = text.TextStyle(style, name)
-
-    # We need a dict of body items; I'm feeling lazy so I'll use introspection
-    # Put the subclasses of body_items into a dictionary by name, so that we
-    # can specify them by name in the config file
-    body_items = {i.__name__: i for i in bodyitems.BodyItem.__subclasses__()}
+        fonts[name] = text.TextStyle(style, name) 
 
     # For each body item given a set of default text styles in the config...
     for name, params in format_schema['body items'].items():
         # Get each of those defined styles...
         for target, style_name in params['text styles'].items():
             # And set them as the default style in that body item's class
-            body_items[name].set_default_font(target, fonts[style_name])
+            bodyitems.body_items[name].set_default_font(target, fonts[style_name])
 
 reload()
