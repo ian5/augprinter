@@ -26,7 +26,7 @@ def renderstep_constructor(
     # Convert the yaml node into a dictionary so we can use it 
     params = loader.construct_mapping(node, True)
     # Warning on non string keys should make mistakes easier to understand
-    for k in (k for k in params.keys() if isinstance(k, str)):
+    for k in (k for k in params.keys() if not isinstance(k, str)):
         logger.warning('Non string key {} in renderstep {} {}. Why did you do this?'.format(k, renderstep, params.get('name', 'with no name.')))
     # Strip non string keys to pass the renderstep as parameters
     params = {k: v for k, v in params.items() if isinstance(k, str)}
@@ -65,7 +65,7 @@ def reload():
                               yaml.FullLoader)
 
     fonts = {}
-            # Fetch each text style
+    # Fetch each text style
     for name, style in format_schema['text styles'].items():
         # ...instantiate it, and add it to our font registry
         fonts[name] = text.TextStyle(style, name) 
