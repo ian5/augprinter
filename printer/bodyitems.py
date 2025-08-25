@@ -181,7 +181,7 @@ class InfoBox(PixelAligned): #MARK: InfoBox
         The BodyItems to put within the container; height is automatically
         detected.
     """
-
+#TODO: make this play nice with more bodyitems it fucks up flavortext apparently
     def __init__(self, children : Sequence[BodyItem]):
         self.children = list(children)
         # TODO: kill an magic number
