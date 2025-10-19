@@ -58,7 +58,8 @@ class Sigil(BodyItem): #MARK: Sigil
                  titlefont: text.TextStyle|None = None,
                  bodyfont: text.TextStyle|None = None,
                  blacked : bool = False,
-                 outlineicon: str | Image.Image | None = None) -> None:
+                 outlineicon: str | Image.Image | None = None,
+                 **kwargs) -> None:
         self.name = name
         self.icon = icon
         self.blacked = blacked
@@ -67,7 +68,7 @@ class Sigil(BodyItem): #MARK: Sigil
         self.set_font(bodyfont, 'body')
         # We need to know how wide the title is to wrap the text properly
         self.titlewidth = self.fonts['title'].get_length(self.name + ': ')
-        self.text = text
+        self.text = text.format(**kwargs) 
         # Wrapping the text in advance
         # TODO: Magic number
         self.lines = self.fonts['body'].wrap(self.text, w = 750,
