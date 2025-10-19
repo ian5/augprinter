@@ -6,6 +6,7 @@ from PIL import ImageDraw
 from printer.loaders import open_font_cached 
 from collections import namedtuple
 
+
 # Named tuple representing one layer of a text style
 StyleLayer = namedtuple('StyleLayer', ('font', 'offset', 'flags', 'color'))
 
@@ -19,7 +20,7 @@ class TextStyle:
         # We need to pack the parameters from the config file into this object
         for layer in layers:
             # Open the font to use for this text layer
-            font = open_font_cached(layer['font'], layer['size']),
+            font = open_font_cached(layer['font'], layer['size'])
             style_layer = StyleLayer(
                 # We need to keep the font to use to print
                 font,
@@ -36,7 +37,7 @@ class TextStyle:
             if 'ignore for size' not in style_layer.flags:
                 # Find this layer's ascent and check the ascent of the text 
                 # style against it.
-                ascent : int = style_layer.font.getmetrics()
+                ascent : int = style_layer.font.getmetrics()[0]
                 # Push the ascent of the style up if the layer is too high
                 self.ascent = min(style_layer.offset[0]+ascent, self.ascent)
             # Add the style layer to the style
