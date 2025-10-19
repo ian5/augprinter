@@ -1,5 +1,5 @@
 import copy
-from typing import Sequence
+from typing import Sequence, cast
 from loguru import logger
 from PIL import Image
 from PIL import ImageDraw
@@ -15,21 +15,30 @@ class TextStyle:
     def __init__(self, layers: Sequence, name: str | None = None):
         self.name = name
         self.layers = []
+        self.ascent = 0
         # We need to pack the parameters from the config file into this object
         for layer in layers:
+            # Open the font to use for this text layer
+            font = open_font_cached(layer['font'], layer['size']),
             style_layer = StyleLayer(
-                # Open the font to use for this text layer
-                open_font_cached(layer['font'], layer['size']),
+                # We need to keep the font to use to print
+                font,
                 # If we were given one, save the layer offset; otherwise there
                 # is no offset
                 tuple(layer.get('offset', (0,0))),
                 # If we were given any, save the layer flags
                 set(layer.get('flags', set())),
                 # If we were given one, set the color override for this layer.
-                # We need the ternary because we only want a tuple if the color
-                # is found.
+                # Otherwise, the color is up to the caller.
                 tuple(layer['color']) if 'color' in layer else None
             )
+            # Unless we were told not to...
+            if 'ignore for size' not in style_layer.flags:
+                # Find this layer's ascent and check the ascent of the text 
+                # style against it.
+                ascent : int = style_layer.font.getmetrics()
+                # Push the ascent of the style up if the layer is too high
+                self.ascent = min(style_layer.offset[0]+ascent, self.ascent)
             # Add the style layer to the style
             self.layers.append(style_layer)
     
@@ -70,7 +79,7 @@ class TextStyle:
         for layer in self.layers:
             # Ignore it if it's ignored for this purpose (so that things like
             # dropshadows don't have to mess with text width)
-            if 'ignore for width' in layer.flags:
+            if 'ignore for size' in layer.flags:
                 continue
             # Retrieve it's offsets
             offset_x, oy = layer.offset
@@ -87,7 +96,7 @@ class TextStyle:
     
     #TODO: Replace with rich text handling
     def wrap(self, text: str, w: int, first_line_offset: int = 0) -> list[str]:
-        """Split a string into a list of strings that each fit within a given horizontal space.
+        """Split a string into a list of strings which fit a given width.
         
         Parameters
         ----------

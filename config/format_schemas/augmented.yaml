@@ -16,6 +16,7 @@ text styles:
       size: 109
       color: [0,0,0]
       offset: [5,5]
+      flags: {ignore for size}
     -
       font: assets/fonts/Cambria.otf
       size: 109

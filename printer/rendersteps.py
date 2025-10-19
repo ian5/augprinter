@@ -1,9 +1,11 @@
+import math
 import typing
 from collections.abc import Collection
 from PIL import Image
 from loguru import logger
 from printer.loaders import open_image_cached, get_image 
 from printer.bodyitems import BodyItem
+from printer.text import TextStyle
 
 # def draw_layer(image: Image.Image, items: typing.Sequence[dict], params: dict) -> None: #MARK: Draw Layer
 #     for step in items:
@@ -154,7 +156,9 @@ class ImageArray(RenderStep): #MARK: ImageArray
     spacing : int = 2
         Amount of extra padding between icons in the array.
     """
-    def __init__(self, default: str|None = None, name: str|None = None, position: typing.Sequence[int] = (0,0), flags: Collection = set(), spacing: int = 2) -> None:
+    def __init__(self, default: str|None = None, name: str|None = None, 
+                 position: typing.Sequence[int] = (0,0), 
+                 flags: Collection = set(), spacing: int = 2) -> None:
         self.name = name
         self.flags = flags
         # If a default was provided, it might get used a lot, so cache it
@@ -162,52 +166,54 @@ class ImageArray(RenderStep): #MARK: ImageArray
         self.position = tuple(position)
         self.spacing = spacing
 
-    def draw(self, image: Image.Image, parameters: typing.Mapping=dict()) -> None:
-            # The first icon is drawn where the renderstep is 
-            iconx, icony = self.position
-            # For each icon we're drawing
-            for icon in parameters.get(self.name, []):
-                # Unpack the information about the icon
-                img, count, compact = icon
-                # If we've been asked to ignore the compact option, do that
-                if 'forceverbose' in self.flags:
-                    compact = False
-                elif 'forceterse' in self.flags:
-                    compact = True
-                # If we've been asked to, cache the icon's image
-                img = open_image_cached(img) if 'cache' in self.flags else img
-                # Open the image if we didn't cache it
-                with get_image(img, self.default) as icon:
-                    # Compact rendering
-                    if compact:
-                        # TODO: magic number cleanup
-                        # Draw an icon centered vertically on the
-                        # current position
-                        image.alpha_composite(icon, ((iconx-(icon.width-1)),
-                                                     icony-(icon.height//2)))
-                        # not sure honestly TODO: come back to this and unfuck the comments
-                        iconx -= icon.width+5
-                        # We draw the digits right to left, so reverse them
-                        for c in reversed('{}x'.format(count)):
-                            # The digits will be used in every compact
-                            # icon rendering, so we always cache them
-                            char = open_image_cached('assets/builtin/{}.png'.format(c))
-                            # Draw the number centered vertically
-                            image.alpha_composite(char, (iconx,icony-4))
-                            iconx -= 6
-                    # Verbose rendering
-                    else:
-                        for i in range(count):
-                            # Draw one icon centered vertically on the 
-                            # renderstep position, the specified number of 
-                            # times, shifting left each time.
-                            image.alpha_composite(icon, ((iconx-(icon.width-1)),icony-(icon.height//2)))
-                            iconx -= icon.width-1
-                # Put space in between each different cost
-                iconx -= self.spacing
+    def draw(self, image: Image.Image, 
+             parameters: typing.Mapping=dict()) -> None:
+        # The first icon is drawn where the renderstep is 
+        iconx, icony = self.position
+        # For each icon we're drawing
+        for icon in parameters.get(self.name, []):
+            # Unpack the information about the icon
+            img, count, compact = icon
+            # If we've been asked to ignore the compact option, do that
+            if 'forceverbose' in self.flags:
+                compact = False
+            elif 'forceterse' in self.flags:
+                compact = True
+            # If we've been asked to, cache the icon's image
+            img = open_image_cached(img) if 'cache' in self.flags else img
+            # Open the image if we didn't cache it
+            with get_image(img, self.default) as icon:
+                # Compact rendering
+                if compact:
+                    # TODO: magic number cleanup
+                    # Draw an icon centered vertically on the
+                    # current position
+                    image.alpha_composite(icon, ((iconx-(icon.width-1)),
+                                                    icony-(icon.height//2)))
+                    # not sure honestly TODO: come back to this and unfuck the comments
+                    iconx -= icon.width+5
+                    # We draw the digits right to left, so reverse them
+                    for c in reversed('{}x'.format(count)):
+                        # The digits will be used in every compact
+                        # icon rendering, so we always cache them
+                        char = open_image_cached('assets/builtin/{}.png'.format(c))
+                        # Draw the number centered vertically
+                        image.alpha_composite(char, (iconx,icony-4))
+                        iconx -= 6
+                # Verbose rendering
+                else:
+                    for i in range(count):
+                        # Draw one icon centered vertically on the 
+                        # renderstep position, the specified number of 
+                        # times, shifting left each time.
+                        image.alpha_composite(icon, ((iconx-(icon.width-1)),icony-(icon.height//2)))
+                        iconx -= icon.width-1
+            # Put space in between each different cost
+            iconx -= self.spacing
 
 class CardBody(RenderStep): #MARK: CardBody
-    def __init__(self, size: typing.Sequence[int] = (-1, -1), name: str|None = None, position: typing.Sequence[int] = (0,0)):
+    def __init__(self, size: typing.Sequence[int] = (-1, -1), 
+                 name: str|None = None, position: typing.Sequence[int] = (0,0)):
         self.position = tuple(position)
         self.name = name
         self.size = tuple(size)
@@ -224,3 +230,21 @@ class CardBody(RenderStep): #MARK: CardBody
             # We provide both the position and size of the bodyitem box, for 
             # items with mixed widths
             itemy += o.draw(image, (itemx, itemy)+self.size)
+
+class Label(RenderStep): #MARK: Label
+    """Draw a piece of text with a specified font, at a specified position."""
+    def __init__(self, text: str, font: TextStyle,
+                 position: typing.Sequence[int], width: int = -1) -> None:
+            self.position = tuple(position)
+            self.text = text
+            self.font = font
+            self.width = width
+
+    def draw(self, image: Image.Image, parameters: typing.Mapping=dict()):
+        # Don't wrap the text on a negative width value
+        if self.width >= 0:  
+            lines = self.font.wrap(self.text, self.width)
+        else:
+            lines = [self.text]
+        
+        
