@@ -1,7 +1,6 @@
 from printer.printcore import assemble_card
 from printer.bodyitems import Sigil, Conditional, InfoBox, HorizontalRule, Trait, FlavorText
 from printer.config import fonts
-from printer import reader
 
 def build_test_cards():
     cards = {}
