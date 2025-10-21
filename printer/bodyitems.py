@@ -58,7 +58,7 @@ class Sigil(BodyItem): #MARK: Sigil
                  titlefont: text.TextStyle|None = None,
                  bodyfont: text.TextStyle|None = None,
                  blacked : bool = False,
-                 outlineicon: str | Image.Image | None = None,
+                 invertedicon: str | Image.Image | None = None,
                  **kwargs) -> None:
         self.name = name
         self.icon = icon
@@ -73,7 +73,7 @@ class Sigil(BodyItem): #MARK: Sigil
         # TODO: Magic number
         self.lines = self.fonts['body'].wrap(self.text, w = 750,
             first_line_offset=self.titlewidth)
-        self.outlineicon = outlineicon
+        self.invertedicon = invertedicon
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int],
              blacked: bool = False) -> int:
@@ -81,11 +81,11 @@ class Sigil(BodyItem): #MARK: Sigil
         x, y, w, h = box
         # We need an ImageDraw object to render the sigil text
         draw = ImageDraw.Draw(image)
-        if self.blacked: # Are we being drawn in an infobox?
+        if self.blacked or blacked: # Are we being drawn in an infobox?
             # If so, and there's a special icon for infoboxes, just use it
-            if self.outlineicon is not None:
+            if self.invertedicon is not None:
                 # We cache the sigil error, since we'll only ever have the one
-                with get_image(self.outlineicon, self.error) as icon:
+                with get_image(self.invertedicon, self.error) as icon:
                     # Then overlay the sigil icon in the right place
                     image.alpha_composite(icon, (x, y))
             # If we don't have one, make the sigil render in a single color
