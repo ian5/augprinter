@@ -1,0 +1,50 @@
+# Test cost definitions
+---
+type: costs
+contents:
+  - name: [Cells, Cell]
+    icon: assets/cost/overcharge.png
+    fold: 5
+  - name: Blood
+    icon: assets/cost/blood.png
+    fold: 5
+
+# Test sigil definitions
+---
+type: sigils
+contents:
+  - name: Testing Sigil
+    body: This is a test of the basic sigil rendering.
+    icon: assets/sigils/Bone Digger.png
+  - name: Token Sigil
+    body: "Class today we're doing token painting. Kid named {token}:"
+    icon: assets/sigils/Frozen Away.png
+  - name: Colorful Sigil
+    body: This sigil has an alternate icon to use when it's rendered in white.
+    icon: assets/sigils/Battery Bearer.png
+    invertedicon: assets/sigils/Battery Bearer_outline.png
+# I think that's all the weird sigil properties? Tokens are handled by the body. 
+
+# Test card definitions
+---
+type: cards
+contents:
+  - id: ComplexCard
+    name: Complicated Card
+    rarity: Uncommon
+    temple: Undead
+    portrait: assets/art/Skeleton.png
+    background: assets/bg/bg_common_undead.png
+    frame: assets/frames/frame_common_undead.png
+    costs: [1 Blood, 4 Cells]
+    tribes: [Canine, Wizard]
+    power: 1
+    health: 4
+    mainbody:
+      - Testing Sigil
+      - id: Token Sigil
+        token: Ouroboros
+# I'll make more card definitions as they become relevant
+
+
+    
