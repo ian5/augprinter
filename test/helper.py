@@ -1,6 +1,8 @@
 import pytest
 from PIL import Image
 
+#TODO: Figure out how to provide proper notice for this license
+
 # stolen from https://github.com/python-pillow/Pillow/blob/main/Tests/helper.py
 # but with some github actions support i neither understand nor need removed
 def assert_image_equal(a: Image.Image, b: Image.Image, msg: str | None = None) -> None:
