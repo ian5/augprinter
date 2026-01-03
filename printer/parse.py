@@ -36,6 +36,12 @@ def parse_cost(raw : dict) -> Cost:
 # I'm not quite sure if parsing the items and handling complete files should 
 # be multiple files
 
+error_sigil = bodyitems.Sigil(
+    "Not Found", open_image_cached("builtin/sigil_error.png"),
+    "No sigil by this name was found.")
+
+error_cost = Cost("builtin/costerror.png", 4)
+
 class CardContext:
     """Contextual information for the printing of cards"""
     def __init__(self):
@@ -78,3 +84,11 @@ class CardContext:
                     for name in names:
                         # Assign said cost to the name 
                         self.sigils[name] = sigil
+    
+    def get_cost(self, name : str) -> Cost:
+        """Return the cost associated with that name"""
+        return self.costs.get(name, error_cost)
+
+    def get_sigil(self, name : str) -> bodyitems.Sigil:
+        """Return the sigil associated with that name"""
+        return self.sigils.get(name, error_sigil)
