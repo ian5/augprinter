@@ -4,6 +4,7 @@ from PIL import Image
 from loguru import logger
 from printer.loaders import open_image_cached, get_image 
 from printer.text import TextStyle
+from printer.parse import Cost
 
 class RenderStep():
     """Base class for card rendering layers"""
@@ -113,43 +114,43 @@ class ImageArray(RenderStep): #MARK: ImageArray
         # The first icon is drawn where the renderstep is 
         iconx, icony = self.position
         # For each icon we're drawing
-        for icon in parameters.get(self.name, []):
+        for entry in parameters.get(self.name, []):
             # Unpack the information about the icon
-            img, count, compact = icon
+            cost, count = entry
+            icon = cost.icon
+            cost = typing.cast(Cost, cost)
             # If we've been asked to ignore the compact option, do that
             if 'forceverbose' in self.flags:
                 compact = False
             elif 'forceterse' in self.flags:
                 compact = True
-            # If we've been asked to, cache the icon's image
-            img = open_image_cached(img) if 'cache' in self.flags else img
-            # Open the image if we didn't cache it
-            with get_image(img, self.default) as icon:
-                # Compact rendering
-                if compact:
-                    # TODO: magic number cleanup
-                    # Draw an icon centered vertically on the
-                    # current position
-                    image.alpha_composite(icon, ((iconx-(icon.width-1)),
-                                                    icony-(icon.height//2)))
-                    # not sure honestly TODO: come back to this and unfuck the comments
-                    iconx -= icon.width+5
-                    # We draw the digits right to left, so reverse them
-                    for c in reversed('{}x'.format(count)):
-                        # The digits will be used in every compact
-                        # icon rendering, so we always cache them
-                        char = open_image_cached('assets/builtin/{}.png'.format(c))
-                        # Draw the number centered vertically
-                        image.alpha_composite(char, (iconx,icony-4))
-                        iconx -= 6
-                # Verbose rendering
-                else:
-                    for i in range(count):
-                        # Draw one icon centered vertically on the 
-                        # renderstep position, the specified number of 
-                        # times, shifting left each time.
-                        image.alpha_composite(icon, ((iconx-(icon.width-1)),icony-(icon.height//2)))
-                        iconx -= icon.width-1
+            else:
+                compact = cost.get_compact(count)
+            # Compact rendering
+            if compact:
+                # TODO: magic number cleanup
+                # Draw an icon centered vertically on the
+                # current position
+                image.alpha_composite(icon, ((iconx-(icon.width-1)),
+                                                icony-(icon.height//2)))
+                # not sure honestly TODO: come back to this and unfuck the comments
+                iconx -= icon.width+5
+                # We draw the digits right to left, so reverse them
+                for c in reversed('{}x'.format(count)):
+                    # The digits will be used in every compact
+                    # icon rendering, so we always cache them
+                    char = open_image_cached('assets/builtin/{}.png'.format(c))
+                    # Draw the number centered vertically
+                    image.alpha_composite(char, (iconx,icony-4))
+                    iconx -= 6
+            # Verbose rendering
+            else:
+                for i in range(count):
+                    # Draw one icon centered vertically on the 
+                    # renderstep position, the specified number of 
+                    # times, shifting left each time.
+                    image.alpha_composite(icon, ((iconx-(icon.width-1)),icony-(icon.height//2)))
+                    iconx -= icon.width-1
             # Put space in between each different cost
             iconx -= self.spacing
 
