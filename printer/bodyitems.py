@@ -57,12 +57,10 @@ class Sigil(BodyItem): #MARK: Sigil
     def __init__(self, name: str, icon: str | Image.Image, text: str,
                  titlefont: text.TextStyle|None = None,
                  bodyfont: text.TextStyle|None = None,
-                 blacked : bool = False,
                  invertedicon: str | Image.Image | None = None,
                  **kwargs) -> None:
         self.name = name
         self.icon = icon
-        self.blacked = blacked
         # Helper function that only sets the font if we were provided one
         self.set_font(titlefont, 'title')
         self.set_font(bodyfont, 'body')
@@ -81,7 +79,7 @@ class Sigil(BodyItem): #MARK: Sigil
         x, y, w, h = box
         # We need an ImageDraw object to render the sigil text
         draw = ImageDraw.Draw(image)
-        if self.blacked or blacked: # Are we being drawn in an infobox?
+        if blacked: # Are we being drawn in an infobox?
             # If so, and there's a special icon for infoboxes, just use it
             if self.invertedicon is not None:
                 # We cache the sigil error, since we'll only ever have the one
@@ -102,7 +100,7 @@ class Sigil(BodyItem): #MARK: Sigil
             with get_image(self.icon, self.error) as icon:
                 image.alpha_composite(icon, (x, y))
         # If we're in an infobox make the text show up on a black background
-        text_color = (255,255,255) if self.blacked else (0,0,0) # lol
+        text_color = (255,255,255) if blacked else (0,0,0) # lol
 
         # If the sigil text is one line long, it needs centered vertically
         if len(self.lines) == 1:
