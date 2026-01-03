@@ -14,14 +14,17 @@ class Cost:
     threshold : int, optional
         The threshold at which this cost changes to compact rendering
     """
-    def __init__(self, icon : str, threshold : int | None):
+    def __init__(self, icon : str, fold : int | None):
         self.icon = open_image_cached(icon)
-        self.threshold = threshold
+        self.fold = fold
     
     def get_compact(self, count : int) -> bool:
         """Returns true if the given count of this cost should be compact"""
-        return self.threshold is None or count <= self.threshold
+        return self.fold is None or count <= self.fold
 
 def parse_sigil(raw : dict) -> bodyitems.Sigil:
     # All the work is done by the sigil initialization function
     return bodyitems.Sigil(**raw)
+
+def parse_cost(raw : dict) -> Cost:
+    return Cost(raw["icon"], raw["fold"])
