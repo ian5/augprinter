@@ -99,13 +99,11 @@ class ImageArray(RenderStep): #MARK: ImageArray
     spacing : int = 2
         Amount of extra padding between icons in the array.
     """
-    def __init__(self, default: str|None = None, name: str|None = None, 
+    def __init__(self, name: str|None = None, 
                  position: typing.Sequence[int] = (0,0), 
                  flags: Collection = set(), spacing: int = 2) -> None:
         self.name = name
         self.flags = flags
-        # If a default was provided, it might get used a lot, so cache it
-        self.default = open_image_cached(default)
         self.position = tuple(position)
         self.spacing = spacing
 
