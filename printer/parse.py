@@ -1,5 +1,3 @@
-import collections.abc
-from PIL import Image
 from printer import bodyitems
 from printer.loaders import open_image_cached
 
@@ -31,10 +29,6 @@ def parse_sigil(raw : dict) -> bodyitems.Sigil:
 def parse_cost(raw : dict) -> Cost:
     """Parse the dictionary form of a cost into the Cost class"""
     return Cost(raw["icon"], raw["fold"])
-
-# NOTE: This might be a good place to split this file later;
-# I'm not quite sure if parsing the items and handling complete files should 
-# be multiple files
 
 error_sigil = bodyitems.Sigil(
     "Not Found", open_image_cached("builtin/sigil_error.png"),
