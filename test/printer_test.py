@@ -1,6 +1,6 @@
 import pytest
 from PIL import Image
-from helper import * # TODO: quit being lazy
+from helper import assert_image_equal_tofile
 from printer.bodyitems import (
     BodyItem, Sigil, Conditional, InfoBox, HorizontalRule, Trait, FlavorText
 )
