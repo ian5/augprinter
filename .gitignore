@@ -3,6 +3,7 @@ output/
 
 # vscode
 .vscode/
+printer/augprinter.code-workspace
 
 # python stuff
 .venv/
