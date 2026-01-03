@@ -1,4 +1,4 @@
 ---
 format_schema: 'format_schemas/augmented.yaml'
-format_cards: 'test_cards.yaml'
+content: ['data/test.yaml']
 ...
