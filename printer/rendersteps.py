@@ -5,62 +5,6 @@ from loguru import logger
 from printer.loaders import open_image_cached, get_image 
 from printer.text import TextStyle
 
-# def draw_layer(image: Image.Image, items: typing.Sequence[dict], params: dict) -> None: #MARK: Draw Layer
-#     for step in items:
-#         step = typing.cast(dict, step)
-#         match step['type']: #would this be better as more objects instead of a switch statement
-#             # the answer is absolutely, right?
-#             # i'll go through the code and make sure i'm not obviously fucking this up though
-#             case 'paste': # Paste an image at a specified location
-#                 identifier = step.get('name', None)
-#                 flags = step.get('flags', {})
-#                 if 'default' not in step: 
-#                     logger.error('No default image provided for paste {}, skipping step'.format(identifier if identifier else 'Unnamed'))
-#                     continue
-#                 position = step.get('position', (0,0))
-#                 default = step['default']
-
-#                 default_image = open_image_cached(default)
-#                 if identifier in params: # Handle when an argument is provided
-#                     img = params[identifier]
-#                     if 'cache' in flags: 
-#                         img = open_image_cached(img)
-#                 else:
-#                     img = default_image
-#                     if 'warn on default' in flags:
-#                         logger.warning('No image provided for step {}, defaulting to {}'.format(step['name'], step['default']))
-#                 with get_image(img, default=default_image) as layer:
-#                     image.alpha_composite(layer,position)
-
-#             case 'cost row':
-#                 identifier = step['name']
-#                 costx, costy = step['position']
-#                 spacing = step.get('spacing', 2)
-#                 costs = params.get(identifier, [])
-#                 flags = step.get('flags', {})
-
-#                 for cost in costs:
-#                     path, count, compact = cost
-#                     if 'forceverbose' in flags:
-#                         compact = False
-#                     elif 'forceterse' in flags:
-#                         compact = True
-#                     img = open_image_cached(path) if 'cache' in flags else path
-#                     with get_image(img, default=open_image_cached('assets/builtin/costerror.png')) as icon:
-#                         if compact:
-#                             image.alpha_composite(icon, ((costx-(icon.width-1)),costy-(icon.height//2))) # vertically center the icon 
-#                             costx -= icon.width+5
-#                             for c in reversed('{}x'.format(count)):
-#                                 char = open_image_cached('assets/builtin/{}.png'.format(c)) # always cache the numbers
-#                                 image.alpha_composite(char, (costx,costy-4))
-#                                 costx -= 6
-#                         else:
-#                             # verbose rendering
-#                             for i in range(count):
-#                                 image.alpha_composite(icon, ((costx-(icon.width-1)),costy-(icon.height//2)))
-#                                 costx -= icon.width-1
-#                     costx -= spacing
-
 class RenderStep():
     """Base class for card rendering layers"""
     def __init__(self) -> None:
