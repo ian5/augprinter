@@ -1,10 +1,8 @@
-import math
 import typing
 from collections.abc import Collection
 from PIL import Image
 from loguru import logger
 from printer.loaders import open_image_cached, get_image 
-from printer.bodyitems import BodyItem
 from printer.text import TextStyle
 
 # def draw_layer(image: Image.Image, items: typing.Sequence[dict], params: dict) -> None: #MARK: Draw Layer
