@@ -31,10 +31,10 @@ def parse_cost(raw : dict) -> Cost:
     return Cost(raw["icon"], raw["fold"])
 
 error_sigil = bodyitems.Sigil(
-    "Not Found", open_image_cached("builtin/sigil_error.png"),
+    "Not Found", open_image_cached("assets/builtin/sigil_error.png"),
     "No sigil by this name was found.")
 
-error_cost = Cost("builtin/costerror.png", 4)
+error_cost = Cost("assets/builtin/costerror.png", 4)
 
 class CardContext:
     """Contextual information for the printing of cards"""
