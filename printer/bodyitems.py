@@ -42,14 +42,11 @@ class Sigil(BodyItem): #MARK: Sigil
         The icon of the sigil
     text : string
         The body text of the sigil
-    render_color : tuple[float,float,float]
-        The color to render the text and possibly icon with
-    blacked : bool
-        If true, render the sigil in forced monocolor.
-        Used for infobox rendering
-    outlineicon : image or path to image
-        A special icon, used when the sigil needs to be rendered in a
-        reminder box; ignores render_color if provided
+    titlefont, bodyfont : TextStyle
+        Use the specified font to render the text stated
+    invertedicon : image or path to image
+        A special icon, used when the sigil needs to be rendered in inverted
+        colors; ignores render_color if provided
     """
 
     error = open_image_cached('assets/builtin/sigil_error.png')
@@ -61,16 +58,12 @@ class Sigil(BodyItem): #MARK: Sigil
                  **kwargs) -> None:
         self.name = name
         self.icon = icon
+        # Apply python formatting to the string directly; this is kinda lazy
+        # but it's close to a perfect solution
+        self.text = text.format(**kwargs) 
         # Helper function that only sets the font if we were provided one
         self.set_font(titlefont, 'title')
         self.set_font(bodyfont, 'body')
-        # We need to know how wide the title is to wrap the text properly
-        self.titlewidth = self.fonts['title'].get_length(self.name + ': ')
-        self.text = text.format(**kwargs) 
-        # Wrapping the text in advance
-        # TODO: Magic number
-        self.lines = self.fonts['body'].wrap(self.text, w = 750,
-            first_line_offset=self.titlewidth)
         self.invertedicon = invertedicon
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int],
@@ -102,13 +95,16 @@ class Sigil(BodyItem): #MARK: Sigil
         # If we're in an infobox make the text show up on a black background
         text_color = (255,255,255) if blacked else (0,0,0) # lol
 
+        lines = self.get_wrapped_lines()
+        titlewidth = self.get_title_width()
+
         # If the sigil text is one line long, it needs centered vertically
-        if len(self.lines) == 1:
+        if len(lines) == 1:
             # TODO: kill magic number
             self.fonts['title'].print_line(self.name+": ", draw, (x+80, y+15),
                                            fill=text_color, anchor="la")# name
-            self.fonts['body'].print_line(self.lines[0], draw,
-                                          (x+80+self.titlewidth, y+15),
+            self.fonts['body'].print_line(lines[0], draw,
+                                          (x+80+titlewidth, y+15),
                                           fill=text_color, anchor="la") # text
         # Otherwise draw each line in a stack
         else:
@@ -116,9 +112,9 @@ class Sigil(BodyItem): #MARK: Sigil
             # bother commenting this until I come back to strip those
             self.fonts['title'].print_line(self.name+": ", draw, (x+80, y-5),
                                            fill=text_color, anchor="la") # name
-            for i, line in enumerate(self.lines):
+            for i, line in enumerate(lines):
                 self.fonts['body'].print_line(line, draw,
-                                              (x+80+self.titlewidth if i==0
+                                              (x+80+titlewidth if i==0
                                                else x+80, y-5+40*i),
                                               fill=text_color, anchor="la") # text
         # Return how tall this thing is, so that other code can stack them
@@ -127,9 +123,16 @@ class Sigil(BodyItem): #MARK: Sigil
     def get_height(self, box: tuple[int, int, int ,int]) -> int:
         # 40px per line of text, sigils are a minimum of 2 lines tall even
         # if they only have one line of text
-        return 40*max(2, len(self.lines))
+        return 40*max(2, len(self.get_wrapped_lines()))
+    
+    def get_wrapped_lines(self) -> list[str]:
+        # TODO: Magic number
+        return self.fonts['body'].wrap(self.text, w = 750,
+            first_line_offset=self.get_title_width())
 
-
+    def get_title_width(self) -> int:
+        """Returns the width, in pixels, of the title in the current font"""
+        return self.fonts['title'].get_length(self.name + ': ')
 class PixelAligned(BodyItem): #MARK: PixelAligned
 
     """Draws an image aligned to the lores pixel grid, snapping downwards.
