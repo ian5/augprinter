@@ -59,7 +59,6 @@ rendersteps:
       flags: {warn on default, cache}
     - !ImageArray
       name: costs
-      default: assets/builtin/costerror.png
       position: [99,18]
       spacing: 2
       flags: {cache}
