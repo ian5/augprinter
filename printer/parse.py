@@ -67,7 +67,7 @@ class CardContext:
                 # For each sigil
                 for raw_sigil in raw["contents"]:
                     # Parse the sigil's actual data
-                    sigil = parse_cost(raw_sigil)
+                    sigil = parse_sigil(raw_sigil)
                     # Allow sigil names to be specified alone in the format by
                     # making a single cost into a tuple of length one
                     if isinstance(raw_sigil["name"], str):
