@@ -19,7 +19,7 @@ class Cost:
     
     def get_compact(self, count : int) -> bool:
         """Returns true if the given count of this cost should be compact"""
-        return self.fold is None or count <= self.fold
+        return self.fold is None or count >= self.fold
 
 def parse_sigil(raw : dict) -> bodyitems.Sigil:
     """Parse the dictionary form of a sigil into the Sigil class"""
