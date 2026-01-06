@@ -1,6 +1,5 @@
 from printer import bodyitems
 from printer.loaders import open_image_cached
-
 # I can't think of a better place for this right now; it's an object that
 # should exist but doesn't fit into the category of any of the others
 class Cost:
@@ -28,13 +27,13 @@ def parse_sigil(raw : dict) -> bodyitems.Sigil:
 
 def parse_cost(raw : dict) -> Cost:
     """Parse the dictionary form of a cost into the Cost class"""
-    return Cost(raw["icon"], raw["fold"])
+    return Cost(raw['icon'], raw['fold'])
 
 error_sigil = bodyitems.Sigil(
-    "Not Found", open_image_cached("assets/builtin/sigil_error.png"),
-    "No sigil by this name was found.")
+    'Not Found', open_image_cached('assets/builtin/sigil_error.png'),
+    'No sigil by this name was found.')
 
-error_cost = Cost("assets/builtin/costerror.png", 4)
+error_cost = Cost('assets/builtin/costerror.png', 4)
 
 class CardContext:
     """Contextual information for the printing of cards"""
@@ -46,34 +45,34 @@ class CardContext:
         """Parse a set of sigils or costs and add them to this context"""
         # Determine what kind of entry we're loading
         # TODO: Retroactively don't repeat yourself
-        match raw["type"]: 
+        match raw['type']: 
             # If we're loading costs
-            case "costs":
+            case 'costs':
                 # For each cost
-                for raw_cost in raw["contents"]:
+                for raw_cost in raw['contents']:
                     # Parse the cost's actual data
                     cost = parse_cost(raw_cost)
                     # Allow cost names to be specified alone in the format by
                     # making a single cost into a tuple of length one
-                    if isinstance(raw_cost["name"], str):
-                        names = (raw_cost["name"],)
+                    if isinstance(raw_cost['name'], str):
+                        names = (raw_cost['name'],)
                     else:
-                        names = raw_cost["name"]
+                        names = raw_cost['name']
                     # Then for each name 
                     for name in names:
                         # Assign said cost to the name 
                         self.costs[name] = cost
-            case "sigils":
+            case 'sigils':
                 # For each sigil
-                for raw_sigil in raw["contents"]:
+                for raw_sigil in raw['contents']:
                     # Parse the sigil's actual data
                     sigil = parse_sigil(raw_sigil)
                     # Allow sigil names to be specified alone in the format by
                     # making a single cost into a tuple of length one
-                    if isinstance(raw_sigil["name"], str):
-                        names = (raw_sigil["name"],)
+                    if isinstance(raw_sigil['name'], str):
+                        names = (raw_sigil['name'],)
                     else:
-                        names = raw_sigil["name"]
+                        names = raw_sigil['name']
                     # Then for each name 
                     for name in names:
                         # Assign said cost to the name 
