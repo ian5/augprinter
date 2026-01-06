@@ -193,9 +193,15 @@ class InfoBox(PixelAligned): #MARK: InfoBox
         self.content_height = 0
 
         # We need to know how tall the actual image content is
-        for o in self.children:
-            self.content_height += o.draw(self.contents,
-                                          (0, self.content_height, 750, 1560))
+        for child in self.children:
+            # Prepare the arguments in a dictionary so that we can modify them
+            # for special case rendering
+            arguments = {"image": self.contents,
+                         "box": (0, self.content_height, 750, 1560)}
+            # If the contents are a sigil then they should be rendered inverted
+            if isinstance(child, Sigil):
+                arguments["blacked"] = True
+            self.content_height += child.draw(**arguments)
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
         # Unpack the bounding box to make it more convenient to use
