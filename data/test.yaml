@@ -1,6 +1,7 @@
 # Test cost definitions
 ---
-type: costs
+default:
+  type: cost
 contents:
   - name: [Cells, Cell]
     icon: assets/cost/overcharge.png
@@ -11,7 +12,8 @@ contents:
 
 # Test sigil definitions
 ---
-type: sigils
+default:
+  type: sigil
 contents:
   - name: Testing Sigil
     body: This is a test of the basic sigil rendering.
@@ -27,7 +29,8 @@ contents:
 
 # Test card definitions
 ---
-type: cards
+default:
+  type: card
 contents:
   - id: ComplexCard
     name: Complicated Card
