@@ -1,5 +1,9 @@
+from loguru import logger
 from printer import bodyitems
 from printer.loaders import open_image_cached
+from collections import ChainMap
+from collections.abc import Iterable, Mapping
+
 # I can't think of a better place for this right now; it's an object that
 # should exist but doesn't fit into the category of any of the others
 class Cost:
@@ -20,12 +24,12 @@ class Cost:
         """Returns true if the given count of this cost should be compact"""
         return self.fold is None or count >= self.fold
 
-def parse_sigil(raw : dict) -> bodyitems.Sigil:
+def parse_sigil(raw : Mapping) -> bodyitems.Sigil:
     """Parse the dictionary form of a sigil into the Sigil class"""
     # All the work is done by the sigil initialization function
     return bodyitems.Sigil(**raw)
 
-def parse_cost(raw : dict) -> Cost:
+def parse_cost(raw : Mapping) -> Cost:
     """Parse the dictionary form of a cost into the Cost class"""
     return Cost(raw['icon'], raw['fold'])
 
@@ -41,42 +45,53 @@ class CardContext:
         self.sigils = {}
         self.costs = {}
     
-    def load(self, raw : dict):
-        """Parse a set of sigils or costs and add them to this context"""
-        # Determine what kind of entry we're loading
-        # TODO: Retroactively don't repeat yourself
-        match raw['type']: 
-            # If we're loading costs
-            case 'costs':
-                # For each cost
-                for raw_cost in raw['contents']:
-                    # Parse the cost's actual data
-                    cost = parse_cost(raw_cost)
-                    # Allow cost names to be specified alone in the format by
-                    # making a single cost into a tuple of length one
-                    if isinstance(raw_cost['name'], str):
-                        names = (raw_cost['name'],)
-                    else:
-                        names = raw_cost['name']
-                    # Then for each name 
-                    for name in names:
-                        # Assign said cost to the name 
-                        self.costs[name] = cost
-            case 'sigils':
-                # For each sigil
-                for raw_sigil in raw['contents']:
-                    # Parse the sigil's actual data
-                    sigil = parse_sigil(raw_sigil)
-                    # Allow sigil names to be specified alone in the format by
-                    # making a single cost into a tuple of length one
-                    if isinstance(raw_sigil['name'], str):
-                        names = (raw_sigil['name'],)
-                    else:
-                        names = raw_sigil['name']
-                    # Then for each name 
-                    for name in names:
-                        # Assign said cost to the name 
-                        self.sigils[name] = sigil
+    def load(self, raw : Mapping, defaults : Iterable = []):
+        """Parse a set of data entries and add them to this context"""
+        # Note any properties that apply to all objects in this list
+        default_properties = raw.get('default', {})
+        # For each entry...
+        for entry in raw.get('contents', {}):
+            # Use global values if they aren't overwritten
+            # This is also where any parent groups' defaults are incorporated
+            view = ChainMap(entry, default_properties, *defaults)
+            IDs = view.get('id')
+            
+            # Each type of entry requires different parsing; unspecified types
+            # are assumed to be groups for syntactic convenience
+            match view.get('type', 'group'):
+                case 'cost':
+                    parsed = parse_cost(view)
+                    target = self.costs
+                case 'sigil':
+                    parsed = parse_sigil(view)
+                    target = self.sigils
+                case 'group':
+                    # Group children are called with any default values that
+                    # apply to the group itself
+                    self.load(view, defaults = view.maps[1:])
+                    # Groups don't add any entries of their own so we're done 
+                    continue
+                case other:
+                    # If we don't know what the user just passed us, warn them
+                    # and then pretend nothing happened
+                    logger.warning('Unknown data type {} in data loading. Skipping...'.format(str(other)))
+                    continue
+
+            # Collect the IDs into a set, since duplicates would be meaningless
+            if IDs is None:
+                # If there was no ID specified, fall back on the display name
+                IDs = {view['name']}
+            # Sets require different constructions from single values and
+            # iterables, so we need to check the type of the input
+            elif isinstance(IDs, Iterable) and not isinstance(IDs, str): 
+                IDs = set(IDs) 
+            else: 
+                IDs = {IDs} 
+            
+            # Set a reference to the object we just constructed for each of its
+            # specified identifiers
+            for identifier in IDs:
+                target[identifier] = parsed
     
     def get_cost(self, name : str) -> Cost:
         """Return the cost associated with that name"""

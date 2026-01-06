@@ -1,65 +1,152 @@
 import pytest
 from printer import parse
 
-def test_sigil_loading():
+@pytest.mark.parametrize('name,raw', [
+    pytest.param(
+        "eggs",
+        {
+            "contents": [
+                {
+                    "type": "sigil",
+                    "id": "spam",
+                    "name": "eggs",
+                    "text": "Lorem ipsum dolor sit amet",
+                    "icon": "test/assets/Sprinter.png"
+                }]},
+        id="direct_type"
+    ),
+    pytest.param(
+        "eggs",
+        {
+            "default": {
+                "type": "sigil",
+            },
+            "contents": [
+                {
+                    "id": "spam",
+                    "name": "eggs",
+                    "text": "Lorem ipsum dolor sit amet",
+                    "icon": "test/assets/Sprinter.png"
+                }]},
+        id="default_type_inheritance"
+    ),
+    pytest.param(
+        "eggs",
+        {
+            "default": {
+                "type": "sigil",
+            },
+            "contents": [
+                {
+                    "id": "spam",
+                    "name": "this should be shadowed",
+                    "text": "Lorem ipsum dolor sit amet",
+                    "icon": "test/assets/Sprinter.png"
+                },
+                {
+                    "id": "spam",
+                    "name": "eggs",
+                    "text": "Lorem ipsum dolor sit amet",
+                    "icon": "test/assets/Sprinter.png"
+                }
+                ]},
+        id="shadowing"
+    ),
+    pytest.param(
+        "eggs",
+        {
+            "default": {
+                "name": "eggs",
+            },
+            "contents": [
+                {   
+                    "type": "group",
+                    "default": {
+                        "type": "sigil"
+                    },
+                    "contents": [
+                        {
+                            "id": "spam",
+                            "text": "Lorem ipsum dolor sit amet",
+                            "icon": "test/assets/Sprinter.png"
+                        }]}]},  
+        id="group_inheritance"
+    ),
+])
+def test_sigil_loading(name, raw):
     context = parse.CardContext()
-    context.load({
-        "type": "sigils",
-        "contents": [
-            {"name": "spam",
-            "text": "Lorem ipsum dolor sit amet",
-            "icon": "test/assets/Sprinter.png"}
-            ]
-        })
+    context.load(raw)
     assert context.get_sigil("spam"), "get_sigil failed to return"
-    # Using the icon because there's feasible contexts in which the text
-    # changing could be correct
-    assert context.get_sigil("spam").icon == "test/assets/Sprinter.png", "get_sigil returned with incorrect icon"
+    assert context.get_sigil("spam").name == name, "get_sigil returned with incorrect name"
 
-def test_cost_loading():
+@pytest.mark.parametrize('fold,raw', [
+    pytest.param(
+        3,
+        {
+            "contents": [
+                {
+                    "type": "cost",
+                    "id": "spam",
+                    "icon": "test/assets/Blood.png",
+                    "fold": 3
+                }]},
+        id="direct_type"
+    ),
+    pytest.param(
+        3,
+        {
+            "default": {
+                "type": "cost",
+            },
+            "contents": [
+                {
+                    "id": "spam",
+                    "icon": "test/assets/Blood.png",
+                    "fold": 3
+                }]},
+        id="default_type_inheritance"
+    ),
+    pytest.param(
+        3,
+        {
+            "default": {
+                "type": "cost",
+            },
+            "contents": [
+                {
+                    "id": "spam",
+                    "icon": "test/assets/Blood.png",
+                    "fold": 5
+                },
+                {
+                    "id": "spam",
+                    "icon": "test/assets/Blood.png",
+                    "fold": 3
+                }]},
+        id="shadowing" 
+    ),
+    pytest.param(
+        3,
+        {
+            "default": {
+                "fold": 3,
+            },
+            "contents": [
+                {   
+                    "type": "group",
+                    "default": {
+                        "type": "cost"
+                    },
+                    "contents": [
+                        {
+                            "id": "spam",
+                            "icon": "test/assets/Blood.png"
+                        }]}]},  
+        id="group_inheritance"
+    ),
+])
+def test_cost_loading(fold, raw):
     context = parse.CardContext()
-    context.load({
-        "type": "costs",
-        "contents": [
-            {"name": "spam",
-            "icon": "test/assets/Blood.png",
-            "fold": 5}
-            ]
-        })
+    context.load(raw)
     assert context.get_cost("spam"), "get_cost failed to return"
-    assert context.get_cost("spam").fold == 5, "get_cost returned with incorrect fold"
-
-def test_cost_names():
-    context = parse.CardContext()
-    context.load({
-        "type": "costs",
-        "contents": [
-            {"name": ["spam", "eggs"],
-            "icon": "test/assets/Blood.png",
-            "fold": 5}
-            ]
-        })
-    assert context.get_cost("spam"), "First name failed to retrieve"
-    assert context.get_cost("eggs"), "Second name failed to retrieve"
-    assert context.get_cost("spam") == context.get_cost("eggs"), "Names return unequal costs"
-
-def test_cost_shadowing():
-    context = parse.CardContext()
-    context.load({
-        "type": "costs",
-        "contents": [
-            {"name": "spam",
-            "icon": "test/assets/Blood.png",
-            "fold": 5}
-            ]
-        })
-    assert context.get_cost("spam").fold == 5, "Initial cost set failure"
-    context.load({
-        "type": "costs",
-        "contents": [
-            {"name": "spam",
-            "icon": "test/assets/Blood.png",
-            "fold": 3}
-            ]
-        })
-    assert context.get_cost("spam").fold == 3, "Cost shadowing failure"
+    assert context.get_cost("spam").fold == fold, "get_cost returned with incorrect fold"
