@@ -4,7 +4,7 @@ from PIL import Image
 from loguru import logger
 from printer.loaders import open_image_cached, get_image 
 from printer.text import TextStyle
-from printer.parse import Cost
+from printer.datatypes import Cost
 
 class RenderStep():
     """Base class for card rendering layers"""
