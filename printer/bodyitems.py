@@ -58,13 +58,12 @@ class Sigil(BodyItem): #MARK: Sigil
                  **kwargs) -> None:
         self.name = name
         self.icon = icon
-        # Apply python formatting to the string directly; this is kinda lazy
-        # but it's close to a perfect solution
-        self.text = text.format(**kwargs) 
+        self.text = text
         # Helper function that only sets the font if we were provided one
         self.set_font(titlefont, 'title')
         self.set_font(bodyfont, 'body')
         self.invertedicon = invertedicon
+        self.args = kwargs
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int],
              blacked: bool = False) -> int:
@@ -127,9 +126,14 @@ class Sigil(BodyItem): #MARK: Sigil
     
     def get_wrapped_lines(self) -> list[str]:
         # TODO: Magic number
-        return self.fonts['body'].wrap(self.text, w = 750,
+        text = self.get_body_text()
+        return self.fonts['body'].wrap(text, w=750,
             first_line_offset=self.get_title_width())
 
+    def get_body_text(self) -> str:
+        """Get the body text with any tokens applied"""
+        return self.text.format(**self.args)
+    
     def get_title_width(self) -> int:
         """Returns the width, in pixels, of the title in the current font"""
         return self.fonts['title'].get_length(self.name + ': ')
@@ -230,20 +234,21 @@ class InfoBox(PixelAligned): #MARK: InfoBox
         return self.pixel_align(self.content_height+y) - y + 30
 
 class Conditional(PixelAligned): #MARK: Conditional
+    #TODO: Move child rendering to runtime
     """Draws a conditional. Can have children in an Infobox
 
     Parameters
     ----------
-    conditional : Image or str
+    image : Image or str
         The conditional image
     contents : Sequence[BodyItem]
         The things to put in the conditionals infobox; renders if non empty.
     """
 
-    def __init__(self, conditional: Image.Image | str, 
+    def __init__(self, image: Image.Image | str, 
                  contents: Sequence[BodyItem] = []): 
         # TODO: make these render actual text maybe?
-        self.image = conditional
+        self.image = image
         # We need to know the image height to find the total height of the item
         with get_image(self.image) as img:
             self.image_height = img.height
