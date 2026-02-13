@@ -33,8 +33,11 @@ text styles:
       font: assets/fonts/Cambria-Italic.ttf
       size: 33
   art credit font:
-    -
-      font: assets/fonts/Poly-Regular.ttf
+    - font: assets/fonts/Poly-Regular.ttf
+      size: 42
+      color: [0,0,0]
+      offset: [5,5]
+    - font: assets/fonts/Poly-Regular.ttf
       size: 42
   format font:
     -
@@ -78,7 +81,12 @@ body items:
   FlavorText:
     text styles:
       body: italic font
-
+label styles:
+  stats: stat font
+  tribeline: text font
+  name: name font
+  artist: art credit font
+  format: format font
 
 # The assumptions system is the most complex part of the configuration; it's designed to allow you to control
 # some of the behavior of the printer without having to dive into the python

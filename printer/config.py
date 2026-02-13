@@ -53,9 +53,13 @@ register_renderstep_constructor('!ImagePaste', rendersteps.ImagePaste)
 register_renderstep_constructor('!ImageArray', rendersteps.ImageArray)
 register_renderstep_constructor('!CardBody', rendersteps.CardBody)
 
+# Annotations to help with using config items in other contexts
+renderstep_styles : typing.Mapping[str, text.TextStyle] 
+fonts : typing.Mapping[str, text.TextStyle]
+
 def reload():
     # Importing this module lets a piece of code see the configuration data
-    global config, format_schema, fonts
+    global config, format_schema, fonts, renderstep_styles
     # We only need the file itself until the yaml parser is done
     with open('config/config.yaml') as cfg:
         config = yaml.load(cfg, yaml.FullLoader)
@@ -76,5 +80,11 @@ def reload():
         for target, style_name in params['text styles'].items():
             # And set them as the default style in that body item's class
             bodyitems.body_items[name].set_default_font(target, fonts[style_name])
+    # For each text area witha a default label style...
+    renderstep_styles = {}
+    for name, style in format_schema['label styles'].items():
+        # Fetch the TextStyle object and hold onto it.
+        renderstep_styles[name] = fonts[style]
+        
 
 reload()

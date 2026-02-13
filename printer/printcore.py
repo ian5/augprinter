@@ -4,28 +4,13 @@ from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
 from loguru import logger
-from printer.config import format_schema
+from printer.config import format_schema, renderstep_styles
 from printer.loaders import open_image_cached, open_font_cached, get_image
+from printer.text import TextStyle
 
 Font = ImageFont.ImageFont | ImageFont.FreeTypeFont
 
 # TODO: X position handling through this whole thing is jank af
-
-# TODO: data driven
-nameFont = ImageFont.truetype('assets/fonts/Poly-Regular.ttf', 63)
-statFont = ImageFont.truetype('assets/fonts/Cambria.otf', 109)
-textFont = ImageFont.truetype('assets/fonts/Cambria.otf', 33)
-boldFont = ImageFont.truetype('assets/fonts/Cambria-Bold.ttf', 33)
-italFont = ImageFont.truetype('assets/fonts/Cambria-Italic.ttf', 33)
-artsFont = ImageFont.truetype('assets/fonts/Poly-Regular.ttf', 42)
-formatFont = ImageFont.truetype('assets/fonts/Cambria.otf', 20)
-
-def shadow_text(image : ImageDraw.ImageDraw, x : int, y : int, text : str, font : Font, anchor : str ="la") -> None: # TODO make this not so inflexible-
-    image.text((x+5,y+5), text, fill=(0,0,0), font=font, anchor=anchor)
-    image.text((x,y), text, fill=(255,255,255), font=font, anchor=anchor)
-
-def draw_layer(image: Image.Image, items: Sequence[dict], params: dict) -> None: #MARK: Draw Layer
-    pass
 
 #MARK: Assemble Card
 def assemble_card(power: str | int = '0', health: str | int = '0', rarity: str = 'rarityless', temple: str = 'templeless',
@@ -90,8 +75,9 @@ def assemble_card(power: str | int = '0', health: str | int = '0', rarity: str =
     power, health = str(power), str(health)
     for v, x in [(power, 180), (health, 940)]: # TODO: pretend this is forwards compatibility and not laziness
         try:
-            length = statFont.getlength(str(int(v)))
-            shadow_text(draw,int(x - length/2),1331,str(int(v)),statFont)
+            length = renderstep_styles['stats'].get_length(str(int(v)))
+            renderstep_styles['stats'].print_line(str(int(v)), draw,
+                (int(x - length/2), 1331), (255, 255, 255))
         except ValueError: # it was actually a variable power and not an integer
             with get_image(v) as icon:
                 image.alpha_composite(icon, (int(x-icon.width/2), 1351))
@@ -103,17 +89,17 @@ def assemble_card(power: str | int = '0', health: str | int = '0', rarity: str =
 
     # Tribeline (includes rarity and temple)
     tribe_string = '{} {}'.format(rarity, temple) if tribes == None else '{} {} - {}'.format(rarity, temple, ' '.join(tribes))
-    draw.text((151,1295), tribe_string, fill=accentcolor, font=textFont, anchor="la")
-
+    renderstep_styles['tribeline'].print_line(tribe_string, draw, (151,1295), 
+                                              accentcolor[:3])
     # Draw name
-    shadow_text(draw,136,136,name,nameFont)
-
+    renderstep_styles['name'].print_line(name, draw, (136, 136), (255,255,255))
     # Art credit
-    shadow_text(draw,560,1375,"Illus. {}".format(artist),artsFont,anchor="ma")
-
+    renderstep_styles['artist'].print_line('Illus. {}'.format(artist),
+                                           draw, (560, 1375), (255, 255, 255),
+                                           anchor='ma')
     # Oh yeah and the version too
-    draw.text((560,1483),format,fill=accentcolor,font=formatFont,anchor="ma")
-
+    renderstep_styles['format'].print_line(format, draw, (560,1483), 
+                                           accentcolor[:3], anchor='ma')
     # draw the decals
     for icon, pos in decals:
         with get_image(icon) as i:

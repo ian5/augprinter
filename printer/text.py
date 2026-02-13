@@ -64,7 +64,7 @@ class TextStyle:
         for layer in self.layers:
             ox, oy = layer.offset
             # If it was specified use the layer color instead of the line color
-            color = fill if layer.color is None else layer['color']
+            color = fill if layer.color is None else layer.color
             # Draw it at the current position, plus its offset, with the right
             # color and font
             img.text((posx+ox, posy+oy), text, font=layer.font,
