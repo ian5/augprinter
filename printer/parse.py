@@ -41,6 +41,9 @@ class CardContext: #MARK: CardContext
             case 'trait':
                 parsed = self.parse_trait(entry)
                 target = self.traits
+            case 'conditional':
+                parsed = self.parse_conditional(entry)
+                target = self.conditionals
             case other:
                 # If we don't know what this thing is, warn the user and then
                 # pretend nothing happened
@@ -301,14 +304,14 @@ class DataParser():
             
             # Each type of entry requires different parsing
             match view.get('type', 'group'):
-                case 'cost' | 'sigil' | 'trait':
+                case 'cost' | 'sigil' | 'trait' | 'conditional':
                     self.context.insert(view, IDs)
                 case 'card':
                     self.cards.insert(view, IDs)
                 case other:
                     # If we don't know what the user just passed us, warn them
                     # and then pretend nothing happened
-                    logger.warning('Unknown data type {} in data loading. Skipping...'.format(str(other)))
+                    logger.warning('Unknown data type {} fed to parser. Skipping...'.format(str(other)))
                     continue
 
     def print(self, name : str) -> Image.Image:
