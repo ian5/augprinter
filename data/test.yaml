@@ -46,8 +46,8 @@ contents:
     health: 4
     mainbody:
       - Testing Sigil
-      #- id: Token Sigil
-      #  token: Ouroboros
+      - id: Token Sigil
+        token: Ouroboros
     flavor: 'This is flavor text.'
 # I'll make more card definitions as they become relevant
 

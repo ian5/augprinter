@@ -51,19 +51,27 @@ class Sigil(BodyItem): #MARK: Sigil
 
     error = open_image_cached('assets/builtin/sigil_error.png')
 
-    def __init__(self, name: str, icon: str | Image.Image, text: str,
+    def __init__(self, name: str, icon: str | Image.Image, body: str,
                  titlefont: text.TextStyle|None = None,
                  bodyfont: text.TextStyle|None = None,
                  invertedicon: str | Image.Image | None = None,
                  **kwargs) -> None:
         self.name = name
         self.icon = icon
-        self.text = text
+        self.body = body
         # Helper function that only sets the font if we were provided one
         self.set_font(titlefont, 'title')
         self.set_font(bodyfont, 'body')
         self.invertedicon = invertedicon
-        self.args = kwargs
+        self.args = kwargs # We keep these around for TokenizedSigils, but they
+        # don't get used by non tokenized sigils
+
+    def tokenize(self, **tokens):
+        """Return a TokenizedSigil identical to this one but with tokens"""
+        #TODO: This feels *horribly* inelegant but i don't have a better idea
+        return TokenizedSigil(self.name, self.icon, self.body, 
+            self.fonts['title'], self.fonts['body'], self.invertedicon,
+            **(self.args | tokens))
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int],
              blacked: bool = False) -> int:
@@ -131,12 +139,19 @@ class Sigil(BodyItem): #MARK: Sigil
             first_line_offset=self.get_title_width())
 
     def get_body_text(self) -> str:
-        """Get the body text with any tokens applied"""
-        return self.text.format(**self.args)
+        """Get the raw body text"""
+        return self.body
     
     def get_title_width(self) -> int:
         """Returns the width, in pixels, of the title in the current font"""
         return self.fonts['title'].get_length(self.name + ': ')
+
+class TokenizedSigil(Sigil):
+    """Sigil with applied token definitions"""
+    def get_body_text(self) -> str:
+        """Get the body text with tokens applied"""
+        return self.body.format(**self.args)
+
 class PixelAligned(BodyItem): #MARK: PixelAligned
 
     """Draws an image aligned to the lores pixel grid, snapping downwards.

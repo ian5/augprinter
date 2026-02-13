@@ -91,9 +91,12 @@ class CardContext: #MARK: CardContext
         except KeyError:
             logger.error('No body item named {} found.'.format(raw))
             raise
-
+    
     @get_body_item.register
-    def _(self, raw : Mapping) -> bodyitems.BodyItem: # Explicit item
+    def _(self, raw : Mapping) -> bodyitems.BodyItem: # Explicit or tokenized
+        # If we're loading a tokenized sigil, we handle it seperately
+        if 'id' in raw:
+            return self.load_tokenized(raw)
         # Determine what kind of item this is
         guess = raw.get('type', None)
         if guess is None: # They didn't tell us what it was so we have to guess
@@ -113,6 +116,29 @@ class CardContext: #MARK: CardContext
             case err:
                 logger.error('Unknown body item type {}.'.format(err))
                 raise TypeError
+    
+    def load_tokenized(self, raw : Mapping) -> bodyitems.BodyItem:
+        try:
+            # Get the ID we're looking up
+            name = raw['id']
+        except:
+            logger.error('No id given for tokenized sigil; this code path should be impossible to reach')
+            raise
+        try: 
+            # Get the body item by this name
+            item = self.body_items[name]
+        except KeyError:
+            logger.error('No body item named {} found.'.format(name))
+            raise
+        try: 
+            # If it's a sigil, apply any tokens we have to it
+            item = item.tokenize(**raw)
+        except AttributeError:
+            logger.error('Tokens applied to non sigil body item {}'.format(
+                raw.get('id', 'Unnamed')
+            ))
+        return item
+
             
 class Card(): # MARK: Card
     #TODO: is there a better way to handle the generic properties than this?
