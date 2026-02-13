@@ -157,13 +157,16 @@ class Card(): # MARK: Card
         self.power = str(raw.get('power', 0))
         self.health = str(raw.get('health', 0))
         self.raw_body = cast(list, raw.get('mainbody', []))
+        c = raw.get('accentcolor', False)
+        if c:
+            self.accentcolor = (c[0], c[1], c[2], 255)
 
     def print(self, context : CardContext):
         return assemble_card(name = self.name, rarity = self.rarity,
             temple = self.temple, portrait = self.portrait,
             background = self.background, frame = self.frame,
             tribes = self.tribes, power = self.power, health = self.health,
-            costs = self.get_costs(context),
+            costs = self.get_costs(context), accentcolor = self.accentcolor,
             mainbody = self.get_body(context),
             format = 'Card Loading Test')
 
@@ -234,20 +237,26 @@ class Card(): # MARK: Card
 class CardStore():
     def __init__(self):
         """Store for Card objects"""
-        self.cards : dict[str, Card] = dict() 
+        self.lookup : dict[str, Card] = dict() 
+        self.cards : set[Card] =  set()
     
     def insert(self, raw, names):
         """Add a card to this object from its dictionary representation"""
+        card = Card(raw)
+        self.cards.add(card)
         for name in names:
-            self.cards[name] = Card(raw)
+            self.lookup[name] = card
 
     def get_card(self, card : str) -> Card:
         """Retrieve a card object by name"""
         try: 
-            return self.cards[card]
+            return self.lookup[card]
         except KeyError:
             logger.error('Card {} not found.'.format(card))
             raise
+
+    def __iter__(self):
+        return iter(self.cards)
 
 # MARK: DataParser
 class DataParser():
