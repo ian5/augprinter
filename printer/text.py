@@ -1,7 +1,5 @@
-import copy
 from typing import Sequence, cast
 from loguru import logger
-from PIL import Image
 from PIL import ImageDraw
 from printer.loaders import open_font_cached 
 from collections import namedtuple
