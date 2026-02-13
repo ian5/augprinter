@@ -151,6 +151,7 @@ class Card(): # MARK: Card
         self.background = str(raw.get('background', 'assets/builtin/background_error.png'))
         self.frame = str(raw.get('frame', 'assets/builtin/frame_error.png'))
         self.flavor = raw.get('flavor', None)
+        self.artist = raw.get('artist', 'No Artist')
         # TODO: Validate these properly instead of just assuming they're fine
         self.raw_costs = cast(list, raw.get('costs', []))
         self.tribes = cast(list, raw.get('tribes', [])) 
@@ -167,7 +168,7 @@ class Card(): # MARK: Card
             background = self.background, frame = self.frame,
             tribes = self.tribes, power = self.power, health = self.health,
             costs = self.get_costs(context), accentcolor = self.accentcolor,
-            mainbody = self.get_body(context),
+            mainbody = self.get_body(context), artist = self.artist,
             format = 'Card Loading Test')
 
     def get_costs(self, context : CardContext) -> list[Cost]:
