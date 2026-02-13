@@ -2,7 +2,6 @@ import re
 from collections import ChainMap
 from collections.abc import Iterable, Mapping, MutableMapping #import creep lol
 from typing import cast
-from functools import singledispatchmethod
 from loguru import logger
 from PIL import Image
 from printer import bodyitems
@@ -84,13 +83,22 @@ class CardContext: #MARK: CardContext
         """Parse the dictionary form of a trait into the Trait class"""
         return bodyitems.Trait(**raw)
 
-    @classmethod
-    def parse_conditional(cls, raw : Mapping) -> bodyitems.Conditional:
+    # This can't be a class method because conditionals need to be able to look
+    # up sigils to parse their children
+    def parse_conditional(self, raw : MutableMapping) -> bodyitems.Conditional:
         """Parse a Conditional from dictionary, including contents"""
-        return bodyitems.Conditional(**raw)
+        # We need to build the contents now if they were given here
+        contents = []
+        if 'contents' in raw:
+            for item in raw['contents']:
+                contents.append(self.get_body_item(item))
+        # I know the type hint looks silly here, but having part of the mapping
+        # be a list scared the linter when passing to the method expecting 
+        # a string argument down there
+        amended : ChainMap = ChainMap({'contents': contents}, raw)
+        return bodyitems.Conditional(**amended)
     
-    @classmethod
-    def parse_body_item(cls, raw : Mapping) -> bodyitems.BodyItem:
+    def parse_body_item(self, raw : MutableMapping) -> bodyitems.BodyItem:
         """Parse a BodyItem, attempting to guess type if unspecified."""
         # Determine what kind of item this is
         guess = raw.get('type', None)
@@ -103,11 +111,11 @@ class CardContext: #MARK: CardContext
                 guess = 'conditional'
         match guess:
             case 'sigil':
-                return cls.parse_sigil(raw)
+                return self.parse_sigil(raw)
             case 'trait':
-                return cls.parse_trait(raw)
+                return self.parse_trait(raw)
             case 'conditional':
-                return cls.parse_conditional(raw) # But why though?
+                return self.parse_conditional(raw)
             case err:
                 logger.error('Unknown body item type {}.'.format(err))
                 raise TypeError
@@ -115,7 +123,7 @@ class CardContext: #MARK: CardContext
     def get_body_item(self, raw : MutableMapping | str) -> bodyitems.BodyItem:
         """Parse a body item, defaulting to a parent's values if one exists."""
         # Syntactic sugar that lets you load an unchanged class faster
-        if isinstance(raw, str): raw = {'parent': str}
+        if isinstance(raw, str): raw = {'parent': raw}
         # If we have any default values, we need to fetch them
         if 'parent' in raw:
             try:
