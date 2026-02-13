@@ -1,6 +1,8 @@
 import pytest
 from printer import parse
 
+#TODO: Implement equality tests for these classes so this isnt sojank
+
 @pytest.mark.parametrize('name,raw', [
     pytest.param(
         "eggs",
@@ -10,7 +12,7 @@ from printer import parse
                     "type": "sigil",
                     "id": "spam",
                     "name": "eggs",
-                    "text": "Lorem ipsum dolor sit amet",
+                    "body": "Lorem ipsum dolor sit amet",
                     "icon": "test/assets/Sprinter.png"
                 }]},
         id="direct_type"
@@ -25,7 +27,7 @@ from printer import parse
                 {
                     "id": "spam",
                     "name": "eggs",
-                    "text": "Lorem ipsum dolor sit amet",
+                    "body": "Lorem ipsum dolor sit amet",
                     "icon": "test/assets/Sprinter.png"
                 }]},
         id="default_type_inheritance"
@@ -40,13 +42,13 @@ from printer import parse
                 {
                     "id": "spam",
                     "name": "this should be shadowed",
-                    "text": "Lorem ipsum dolor sit amet",
+                    "body": "Lorem ipsum dolor sit amet",
                     "icon": "test/assets/Sprinter.png"
                 },
                 {
                     "id": "spam",
                     "name": "eggs",
-                    "text": "Lorem ipsum dolor sit amet",
+                    "body": "Lorem ipsum dolor sit amet",
                     "icon": "test/assets/Sprinter.png"
                 }
                 ]},
@@ -67,15 +69,16 @@ from printer import parse
                     "contents": [
                         {
                             "id": "spam",
-                            "text": "Lorem ipsum dolor sit amet",
+                            "body": "Lorem ipsum dolor sit amet",
                             "icon": "test/assets/Sprinter.png"
                         }]}]},  
         id="group_inheritance"
     ),
 ])
-def test_sigil_loading(name, raw):
-    context = parse.CardContext()
-    context.load(raw)
+def test_sigil_parsing(name, raw):
+    loader = parse.DataParser()
+    loader.parse(raw)
+    context = loader.context
     assert context.get_sigil("spam"), "get_sigil failed to return"
     assert context.get_sigil("spam").name == name, "get_sigil returned with incorrect name"
 
@@ -145,8 +148,9 @@ def test_sigil_loading(name, raw):
         id="group_inheritance"
     ),
 ])
-def test_cost_loading(fold, raw):
-    context = parse.CardContext()
-    context.load(raw)
+def test_cost_parsing(fold, raw):
+    loader = parse.DataParser()
+    loader.parse(raw)
+    context = loader.context
     assert context.get_cost("spam"), "get_cost failed to return"
     assert context.get_cost("spam").fold == fold, "get_cost returned with incorrect fold"
