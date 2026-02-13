@@ -173,11 +173,11 @@ class Card(): # MARK: Card
         for item in self.raw_body:
             parsed = self.resolve_body_item(item, context)
             # We need to put the item we got back in the right place
-            if parsed is bodyitems.Sigil:
+            if isinstance(parsed, bodyitems.Sigil):
                 sigils.append(parsed)
-            elif parsed is bodyitems.Trait:
+            elif isinstance(parsed, bodyitems.Trait):
                 traits.append(parsed)
-            elif parsed is bodyitems.Conditional:
+            elif isinstance(parsed, bodyitems.Conditional):
                 conditionals.append(parsed)
             elif parsed is None:
                 logger.warning('Unknown BodyItem type {} in card definition {}'
