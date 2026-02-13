@@ -12,7 +12,7 @@ class Cost:
     threshold : int, optional
         The threshold at which this cost changes to compact rendering
     """
-    def __init__(self, icon : str, fold : int | None = None):
+    def __init__(self, icon : str, fold : int | None = None, **kwargs):
         self.icon = open_image_cached(icon)
         self.fold = fold
     

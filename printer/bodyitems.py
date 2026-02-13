@@ -63,15 +63,7 @@ class Sigil(BodyItem): #MARK: Sigil
         self.set_font(titlefont, 'title')
         self.set_font(bodyfont, 'body')
         self.invertedicon = invertedicon
-        self.args = kwargs # We keep these around for TokenizedSigils, but they
-        # don't get used by non tokenized sigils
-
-    def tokenize(self, **tokens):
-        """Return a TokenizedSigil identical to this one but with tokens"""
-        #TODO: This feels *horribly* inelegant but i don't have a better idea
-        return TokenizedSigil(self.name, self.icon, self.body, 
-            self.fonts['title'], self.fonts['body'], self.invertedicon,
-            **(self.args | tokens))
+        self.args = kwargs # Used for token requiring bodies.
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int],
              blacked: bool = False) -> int:
@@ -140,17 +132,11 @@ class Sigil(BodyItem): #MARK: Sigil
 
     def get_body_text(self) -> str:
         """Get the raw body text"""
-        return self.body
+        return self.body.format(**self.args)
     
     def get_title_width(self) -> int:
         """Returns the width, in pixels, of the title in the current font"""
         return self.fonts['title'].get_length(self.name + ': ')
-
-class TokenizedSigil(Sigil):
-    """Sigil with applied token definitions"""
-    def get_body_text(self) -> str:
-        """Get the body text with tokens applied"""
-        return self.body.format(**self.args)
 
 class PixelAligned(BodyItem): #MARK: PixelAligned
 
@@ -261,7 +247,7 @@ class Conditional(PixelAligned): #MARK: Conditional
     """
 
     def __init__(self, image: Image.Image | str, 
-                 contents: Sequence[BodyItem] = []): 
+                 contents: Sequence[BodyItem] = [], **kwargs): 
         # TODO: make these render actual text maybe?
         self.image = image
         # We need to know the image height to find the total height of the item

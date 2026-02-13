@@ -1,6 +1,6 @@
 import re
 from collections import ChainMap
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, MutableMapping #import creep lol
 from typing import cast
 from functools import singledispatchmethod
 from loguru import logger
@@ -31,18 +31,15 @@ class CardContext: #MARK: CardContext
     def insert(self, entry : Mapping, names : set):
         """Load a single data entry into this store. Accounts for defaults."""
         # Each type of entry requires different parsing
+        #TOOD: Is this neccesary now? 
         match entry.get('type', 'Unspecified'):
             case 'cost':
-                parsed = self.parse_cost(entry)
                 target = self.costs
             case 'sigil':
-                parsed = self.parse_sigil(entry)
                 target = self.sigils
             case 'trait':
-                parsed = self.parse_trait(entry)
                 target = self.traits
             case 'conditional':
-                parsed = self.parse_conditional(entry)
                 target = self.conditionals
             case other:
                 # If we don't know what this thing is, warn the user and then
@@ -51,55 +48,50 @@ class CardContext: #MARK: CardContext
                 return       
         for name in names:
             # Assign the value to each name it asked to be associated with
-            target[name] = parsed
+            target[name] = entry
 
     def get_cost(self, name : str) -> Cost:
         """Return the cost associated with that name"""
-        return self.costs.get(name, error_cost)
+        try:
+            raw = self.costs[name]
+        except KeyError:
+            logger.error('Attempt to load unknown cost {}.'.format(name))
+            raise
+        return self.parse_cost(raw)
 
     def get_sigil(self, name : str) -> bodyitems.Sigil:
         """Return the sigil associated with that name"""
-        return self.sigils.get(name, error_sigil)
+        try:
+            raw = self.sigils[name]
+        except KeyError:
+            logger.error('Attempt to load unknown sigil {}.'.format(name))
+            raise
+        return self.parse_sigil(raw)
 
-    @staticmethod
-    def parse_sigil(raw : Mapping) -> bodyitems.Sigil:
+    @classmethod
+    def parse_sigil(cls, raw : Mapping) -> bodyitems.Sigil:
         """Parse the dictionary form of a sigil into the Sigil class"""
         # All the work is done by the sigil initialization function
         return bodyitems.Sigil(**raw)
 
-    @staticmethod
-    def parse_cost(raw : Mapping) -> Cost:
+    @classmethod
+    def parse_cost(cls, raw : Mapping) -> Cost:
         """Parse the dictionary form of a cost into the Cost class"""
-        return Cost(raw['icon'], raw['fold'])
+        return Cost(**raw)
     
-    @staticmethod
-    def parse_trait(raw : Mapping) -> bodyitems.Trait:
+    @classmethod
+    def parse_trait(cls, raw : Mapping) -> bodyitems.Trait:
         """Parse the dictionary form of a trait into the Trait class"""
         return bodyitems.Trait(**raw)
 
-    @staticmethod
-    def parse_conditional(raw : Mapping) -> bodyitems.Conditional:
+    @classmethod
+    def parse_conditional(cls, raw : Mapping) -> bodyitems.Conditional:
         """Parse a Conditional from dictionary, including contents"""
-        return bodyitems.Conditional(raw['image'])
-
-    @singledispatchmethod
-    def get_body_item(self, raw) -> bodyitems.BodyItem:
-        logger.error('Unknown body item fetched from context')
-        raise TypeError
+        return bodyitems.Conditional(**raw)
     
-    @get_body_item.register
-    def _(self, raw : str) -> bodyitems.BodyItem: # Get bodyitem by name
-        try: 
-            return self.body_items[raw]
-        except KeyError:
-            logger.error('No body item named {} found.'.format(raw))
-            raise
-    
-    @get_body_item.register
-    def _(self, raw : Mapping) -> bodyitems.BodyItem: # Explicit or tokenized
-        # If we're loading a tokenized sigil, we handle it seperately
-        if 'id' in raw:
-            return self.load_tokenized(raw)
+    @classmethod
+    def parse_body_item(cls, raw : Mapping) -> bodyitems.BodyItem:
+        """Parse a BodyItem, attempting to guess type if unspecified."""
         # Determine what kind of item this is
         guess = raw.get('type', None)
         if guess is None: # They didn't tell us what it was so we have to guess
@@ -111,38 +103,32 @@ class CardContext: #MARK: CardContext
                 guess = 'conditional'
         match guess:
             case 'sigil':
-                return self.parse_sigil(raw)
+                return cls.parse_sigil(raw)
             case 'trait':
-                return self.parse_trait(raw)
+                return cls.parse_trait(raw)
             case 'conditional':
-                return self.parse_conditional(raw) # But why though?
+                return cls.parse_conditional(raw) # But why though?
             case err:
                 logger.error('Unknown body item type {}.'.format(err))
                 raise TypeError
     
-    def load_tokenized(self, raw : Mapping) -> bodyitems.BodyItem:
-        try:
-            # Get the ID we're looking up
-            name = raw['id']
-        except:
-            logger.error('No id given for tokenized sigil; this code path should be impossible to reach')
-            raise
-        try: 
-            # Get the body item by this name
-            item = self.body_items[name]
-        except KeyError:
-            logger.error('No body item named {} found.'.format(name))
-            raise
-        try: 
-            # If it's a sigil, apply any tokens we have to it
-            item = item.tokenize(**raw)
-        except AttributeError:
-            logger.error('Tokens applied to non sigil body item {}'.format(
-                raw.get('id', 'Unnamed')
-            ))
-        return item
-
-            
+    def get_body_item(self, raw : MutableMapping | str) -> bodyitems.BodyItem:
+        """Parse a body item, defaulting to a parent's values if one exists."""
+        # Syntactic sugar that lets you load an unchanged class faster
+        if isinstance(raw, str): raw = {'parent': str}
+        # If we have any default values, we need to fetch them
+        if 'parent' in raw:
+            try:
+                # assuming that raw['parent'] should always work
+                defaults = self.body_items[raw['parent']]
+            except KeyError:
+                logger.error('No body item named {} found'.format(raw['parent']))
+                raise
+        else:
+            defaults = {}
+        composite = ChainMap(raw, defaults)
+        return self.parse_body_item(composite)
+    
 class Card(): # MARK: Card
     #TODO: is there a better way to handle the generic properties than this?
     # at the very least I should do the templerarity frame things
@@ -229,8 +215,8 @@ class Card(): # MARK: Card
         if self.flavor: # If we have flavor text add that to the end
             body_items.append(bodyitems.FlavorText(self.flavor))
         return body_items
-        
-    def resolve_body_item(self, item : Mapping, 
+    
+    def resolve_body_item(self, item : MutableMapping, 
                           context : CardContext) -> bodyitems.BodyItem:
         """Get the object of a bodyitem, whether it's explicit or referenced"""
         # is this enough? feels like this should take more work; dereference if 
