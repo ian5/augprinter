@@ -9,13 +9,6 @@ from printer.loaders import open_image_cached
 from printer.printcore import assemble_card
 from printer.datatypes import Cost
 
-#TODO: figure out a more elegant solution for this
-error_sigil = bodyitems.Sigil(
-    'Not Found', open_image_cached('assets/builtin/sigil_error.png'),
-    'No sigil by this name was found.')
-
-error_cost = Cost('assets/builtin/costerror.png', 4)
-
 class CardContext: #MARK: CardContext
     """Contextual information for the printing of cards"""
     def __init__(self):
@@ -136,7 +129,8 @@ class CardContext: #MARK: CardContext
             defaults = {}
         composite = ChainMap(raw, defaults)
         return self.parse_body_item(composite)
-    
+ 
+
 class Card(): # MARK: Card
     #TODO: is there a better way to handle the generic properties than this?
     # at the very least I should do the templerarity frame things
@@ -228,10 +222,6 @@ class Card(): # MARK: Card
             count = int(count)
             # Look up the cost by name in the provided context
             cost = context.get_cost(cost)
-            if cost is error_cost:
-                # If we couldn't find the cost, complain and exit
-                logger.warning('Unknown cost {}'.format(cost))
-                continue
             costs.append((cost, count))
         return costs
 
@@ -276,6 +266,7 @@ class Card(): # MARK: Card
         # is this enough? feels like this should take more work; dereference if 
         # this works?
         return context.get_body_item(item)
+
 
 # MARK: CardStore
 class CardStore():
