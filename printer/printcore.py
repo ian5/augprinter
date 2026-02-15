@@ -15,7 +15,7 @@ Font = ImageFont.ImageFont | ImageFont.FreeTypeFont
 #MARK: Assemble Card
 def assemble_card(power: str | int = '0', health: str | int = '0', rarity: str = 'rarityless', temple: str = 'templeless',
                   tribes: Sequence | None = None, name: str = 'Unnamed Card', artist: str = 'No Artist',
-                  format: str = 'no format string lol', decals : Sequence[tuple[Image.Image|str, tuple[int, int]]] = [],
+                  format: str = 'no format string lol', decals : Sequence = [],
                   accentcolor : tuple[int,int,int,int] | None = None,
                   **kwargs) -> Image.Image:
     """Create and return a card image given the pieces of a card.
@@ -101,8 +101,8 @@ def assemble_card(power: str | int = '0', health: str | int = '0', rarity: str =
     renderstep_styles['format'].print_line(format, draw, (560,1483), 
                                            accentcolor[:3], anchor='ma')
     # draw the decals
-    for icon, pos in decals:
+    for icon, pos in (tuple(l) for l in decals):
         with get_image(icon) as i:
-            image.alpha_composite(i, pos)
+            image.alpha_composite(i, tuple(pos))
 
     return image
