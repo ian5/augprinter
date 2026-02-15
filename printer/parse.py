@@ -155,9 +155,46 @@ class Card(): # MARK: Card
         self.power = str(raw.get('power', 0))
         self.health = str(raw.get('health', 0))
         self.raw_body = cast(list, raw.get('mainbody', []))
+        self.decals = cast(list, raw.get('decals', []))
         c = raw.get('accentcolor', False)
         if c:
             self.accentcolor = (c[0], c[1], c[2], 255)
+        self.implications()
+
+    # Should replace this iwth real later
+    def implications(self):
+        """Apply some automatic decals for certain properties"""
+        # Mox band rendering
+        if 'Mox' in self.tribes:
+            # If we have the Prism Gem sigil
+            if self.sigil_test('prismgem'):
+                self.decals.append(['assets/misc/gems/moxband_prism.png', [
+                    40,840]])
+            elif 'Conduit' in self.tribes:
+                # Get the appropriate gem
+                if self.sigil_test('orangegem'):
+                    self.decals.append(['assets/misc/gems/gemO.png',
+                                        [530, 850]])                    
+                elif self.sigil_test('greengem'):
+                    self.decals.append(['assets/misc/gems/gemG.png',
+                                        [530, 850]])
+                elif self.sigil_test('bluegem'):
+                    self.decals.append(['assets/misc/gems/gemB.png',
+                                        [530, 850]])
+            # Check for normal gems
+            else:
+                if self.sigil_test('orangegem'):
+                    self.decals.append(['assets/misc/gems/gemO.png', [440, 850]])
+                if self.sigil_test('greengem'):
+                    self.decals.append(['assets/misc/gems/gemG.png', [610, 850]])
+                if self.sigil_test('bluegem'):
+                    self.decals.append(['assets/misc/gems/gemB.png', [530, 850]])
+        elif 'Conduit' in self.tribes:
+            self.decals.append(['assets/misc/conduit_large.png', [40, 840]])
+
+    def sigil_test(self, name : str):
+        """Check if this card has a bodyitem with a certain ID"""
+        return any((n.id==name for n in self.raw_body))
 
     def print(self, context : CardContext):
         return assemble_card(name = self.name, rarity = self.rarity,
@@ -166,7 +203,7 @@ class Card(): # MARK: Card
             tribes = self.tribes, power = self.power, health = self.health,
             costs = self.get_costs(context), accentcolor = self.accentcolor,
             mainbody = self.get_body(context), artist = self.artist,
-            format = 'Card Loading Test')
+            format = 'Card Loading Test', decals = self.decals)
 
     def get_costs(self, context : CardContext) -> list[Cost]:
         costs = []
