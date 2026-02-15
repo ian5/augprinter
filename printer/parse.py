@@ -167,34 +167,43 @@ class Card(): # MARK: Card
         # Mox band rendering
         if 'Mox' in self.tribes:
             # If we have the Prism Gem sigil
-            if self.sigil_test('prismgem'):
+            if self.sigil_test('Prism Gem'):
                 self.decals.append(['assets/misc/gems/moxband_prism.png', [
                     40,840]])
             elif 'Conduit' in self.tribes:
                 # Get the appropriate gem
-                if self.sigil_test('orangegem'):
+                if self.sigil_test('Orange Conduit'):
                     self.decals.append(['assets/misc/gems/gemO.png',
                                         [530, 850]])                    
-                elif self.sigil_test('greengem'):
+                elif self.sigil_test('Green Conduit'):
                     self.decals.append(['assets/misc/gems/gemG.png',
                                         [530, 850]])
-                elif self.sigil_test('bluegem'):
+                elif self.sigil_test('Blue Conduit'):
                     self.decals.append(['assets/misc/gems/gemB.png',
                                         [530, 850]])
             # Check for normal gems
             else:
-                if self.sigil_test('orangegem'):
+                self.decals.append(['assets/misc/gems/moxband_3empty.png', 
+                                    [40, 840]])
+                orange = self.sigil_test('Orange Gem')
+                green = self.sigil_test('Green Gem')
+                blue = self.sigil_test('Blue Gem')
+                if self.sigil_test('Magnificent Gem'):
+                    orange, green, blue = True, True, True
+                if orange:
                     self.decals.append(['assets/misc/gems/gemO.png', [440, 850]])
-                if self.sigil_test('greengem'):
+                if green:
                     self.decals.append(['assets/misc/gems/gemG.png', [610, 850]])
-                if self.sigil_test('bluegem'):
+                if blue:
                     self.decals.append(['assets/misc/gems/gemB.png', [530, 850]])
         elif 'Conduit' in self.tribes:
             self.decals.append(['assets/misc/conduit_large.png', [40, 840]])
 
-    def sigil_test(self, name : str):
-        """Check if this card has a bodyitem with a certain ID"""
-        return any((n.id==name for n in self.raw_body))
+    def sigil_test(self, name : str) -> bool: # TODO: Check for bespoke sigils
+        """Check that this card contains a given sigil reference"""
+        test = name in self.raw_body
+        logger.debug('Sigil test {} returned {}'.format(name, test))
+        return test
 
     def print(self, context : CardContext):
         return assemble_card(name = self.name, rarity = self.rarity,
