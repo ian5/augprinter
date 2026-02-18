@@ -67,7 +67,7 @@ rendersteps:
       flags: {cache}
   hires: 
     - !CardBody
-      name: mainbody
+      name: body
       position: [150,920]
       size: [820,410]
 body items:

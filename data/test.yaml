@@ -26,12 +26,40 @@ contents:
     body: This sigil has an alternate icon to use when it's rendered in white.
     icon: assets/sigils/Battery Bearer.png
     invertedicon: assets/sigils/Battery Bearer_outline.png
+  - name: Blue Gem
+    body: This card provides one blue gem.
+    icon: assets/sigils/Blue Gem.png
+  - name: Green Gem
+    body: This card provides one green gem.
+    icon: assets/sigils/Green Gem.png
+  - name: Orange Gem
+    body: This card provides one orange gem.
+    icon: assets/sigils/Orange Gem.png
+  - name: Magnificent Gem
+    body: This card provides 3 gems of any colors.
+    icon: assets/sigils/Magnificent Gem.png
+
+
 # I think that's all the weird sigil properties? Tokens are handled by the body. 
+
+# Test conditional definitions
+---
+default:
+  type: conditional
+contents:
+  - id: LATCH
+    image: assets/misc/LATCH.png
 
 # Test card definitions
 ---
 default:
   type: card
+  background: assets/bg/bg_common_undead.png
+  frame: assets/frames/frame_common_undead.png
+  temple: Undead
+  rarity: epic and awesome
+  accentcolor: [90, 92, 76]
+  power: 0
 contents:
   - id: ComplexCard
     name: Complicated Card
@@ -40,15 +68,24 @@ contents:
     portrait: assets/art/Skeleton.png
     background: assets/bg/bg_common_undead.png
     frame: assets/frames/frame_common_undead.png
+    accentcolor: [90, 92, 76]
+    artist: steve jobs 2
     costs: [1 Blood, 4 Cells]
-    tribes: [Canine, Wizard]
+    tribes: [Canine, Wizard, Mox]
     power: 1
     health: 4
-    mainbody:
-      - Testing Sigil
-      - id: Token Sigil
-        token: Ouroboros
+    body:
+      - Magnificent Gem
     flavor: 'This is flavor text.'
+  - id: ConditionalTest
+    name: Conditional Guy
+    portrait: assets/art/Blue Mage.png
+    power: 43
+    health: 2
+    body:
+      - Blue Gem
+      - LATCH
+      - Orange Gem
 # I'll make more card definitions as they become relevant
 
 

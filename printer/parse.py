@@ -135,6 +135,7 @@ class Card(): # MARK: Card
     #TODO: is there a better way to handle the generic properties than this?
     # at the very least I should do the templerarity frame things
     def __init__(self, raw : Mapping):
+        self.raw = raw
         self.name = str(raw.get('name', 'Unnamed Card'))
         self.rarity = str(raw.get('rarity', 'No Rarity'))
         self.temple = str(raw.get('temple', 'No Temple'))
@@ -148,12 +149,15 @@ class Card(): # MARK: Card
         self.tribes = cast(list, raw.get('tribes', [])) 
         self.power = str(raw.get('power', 0))
         self.health = str(raw.get('health', 0))
-        self.raw_body = cast(list, raw.get('mainbody', []))
+        self.raw_body = cast(list, raw.get('body', []))
         self.decals = cast(list, raw.get('decals', []))
         c = raw.get('accentcolor', False)
         if c:
             self.accentcolor = (c[0], c[1], c[2], 255)
         self.implications()
+
+    def __str__(self) -> str:
+        return 'Card object {}'.format(self.name)
 
     # Should replace this iwth real later
     def implications(self):
@@ -205,7 +209,7 @@ class Card(): # MARK: Card
             background = self.background, frame = self.frame,
             tribes = self.tribes, power = self.power, health = self.health,
             costs = self.get_costs(context), accentcolor = self.accentcolor,
-            mainbody = self.get_body(context), artist = self.artist,
+            body = self.get_body(context), artist = self.artist,
             format = 'Card Loading Test', decals = self.decals)
 
     def get_costs(self, context : CardContext) -> list[Cost]:
@@ -228,26 +232,27 @@ class Card(): # MARK: Card
     def get_body(self, context : CardContext) -> list[bodyitems.BodyItem]:
         """Return the bodyitems of this card, formatted based on its contents"""
         # This maybe handles more logic than it should
-        sigils = []
-        # Assuming conditionals will always come at the end of the sigil list,
-        # other  than their own children
-        conditionals = []
-        traits = []
+        sigils = [] # Also conditionals
+        traits = [] 
+        # We need to track this so we know if we need to draw a seperator bar
+        last_sigil_is_conditional = False # this is super hacky
         for item in self.raw_body:
             parsed = self.resolve_body_item(item, context)
             # We need to put the item we got back in the right place
             if isinstance(parsed, bodyitems.Sigil):
                 sigils.append(parsed)
+                last_sigil_is_conditional = False
             elif isinstance(parsed, bodyitems.Trait):
                 traits.append(parsed)
             elif isinstance(parsed, bodyitems.Conditional):
-                conditionals.append(parsed)
+                sigils.append(parsed)
+                last_sigil_is_conditional = True
             elif parsed is None:
                 logger.warning('Unknown BodyItem type {} in card definition {}'
                                .format(item.get('type'), self.name))
         if (sigils # If we have sigils to render...
             and (traits or self.flavor) # Something to separate them from...
-            and (not conditionals)): # And nothing else that's already doing so
+            and (not last_sigil_is_conditional)): # And nothing in the way
             # Add a seperator to the end of the sigil list
             sigils.append(bodyitems.HorizontalRule())
         # If there needs to be something seperating traits and flavor text
@@ -255,7 +260,7 @@ class Card(): # MARK: Card
             # Do that
             traits.append(bodyitems.HorizontalRule())
         # Concatenate the sections of the card
-        body_items = sigils + conditionals + traits 
+        body_items = sigils + traits 
         if self.flavor: # If we have flavor text add that to the end
             body_items.append(bodyitems.FlavorText(self.flavor))
         return body_items
@@ -301,15 +306,17 @@ class DataParser():
         self.context = context
         self.cards = cards
 
-    def parse(self, raw : Mapping, defaults : Iterable = []):
+    def parse(self, raw : Mapping, defaults : MutableMapping = {}):
         """Parse a set of data entries and pass them to the managed stores"""
-        # Note any properties that apply to all objects in this list
+        # Note any properties that apply to all objects in this group
+        logger.debug(raw)
         default_properties = raw.get('default', {})
+        logger.debug(default_properties)
         # For each entry...
         for entry in raw.get('contents', {}):
             # Use global values if they aren't overwritten
             # This is also where any parent groups' defaults are incorporated
-            view = ChainMap(entry, default_properties, *defaults)
+            view = ChainMap(entry, default_properties, defaults)
             IDs = view.get('id')
             # Figure out what we're dealing with; assume it's a group if it's
             # empty for syntactic convenience
@@ -319,7 +326,7 @@ class DataParser():
             if kind == 'group':
                 # Group children are called with any default values that
                 # apply to the group itself
-                self.parse(view, defaults = view.maps[1:])
+                self.parse(view, defaults = view.parents)
                 continue
             # Collect the IDs into a set, since duplicates would be meaningless
             # If no ID was specified, fall back on the display name
