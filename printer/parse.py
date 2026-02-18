@@ -357,3 +357,10 @@ class DataParser():
         # Find what card we're printing and print it
         card = self.cards.get_card(name)
         return card.print(self.context)
+
+    def print_all(self) -> dict[str, Image.Image]:
+        """Prints every card stored in this parser."""
+        output = {}
+        for card in self.cards:
+            output[card.name] = card.print(self.context)
+        return output
