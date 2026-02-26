@@ -35,7 +35,7 @@ import printer.printcore as printcore
                     FlavorText("This card is being used to test decals and variable powers, so it doesn't actually need a meaningful body. I was gonna give you a funny big infobox instead, but apparently flavortext doesn't work when rendered inside of an infobox, and given that that's not really real behavior, I've elected not to fix it, so you have to settle with funny long flavortext instead.")
                 ]})
 ])
-def test_fullcard(standard_path, carddefinition):
+def test_printing(standard_path, carddefinition):
     subject = printcore.assemble_card(**carddefinition)
     assert_image_equal_tofile(subject, standard_path, 
         'card {} has incorrect content'.format(standard_path))
