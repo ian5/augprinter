@@ -227,6 +227,8 @@ class Card(): # MARK: Card
             # Look up the cost by name in the provided context
             cost = context.get_cost(cost)
             costs.append((cost, count))
+        # Costs are right to left in the function put them in the natural order
+        costs.reverse()
         return costs
 
     def get_body(self, context : CardContext) -> list[bodyitems.BodyItem]:
@@ -255,13 +257,11 @@ class Card(): # MARK: Card
             and (not last_sigil_is_conditional)): # And nothing in the way
             # Add a seperator to the end of the sigil list
             sigils.append(bodyitems.HorizontalRule())
-        # If there needs to be something seperating traits and flavor text
-        if traits and self.flavor:
-            # Do that
-            traits.append(bodyitems.HorizontalRule())
         # Concatenate the sections of the card
         body_items = sigils + traits 
         if self.flavor: # If we have flavor text add that to the end
+            if traits: # Add a seperator between it and traits if needed
+                body_items.append(bodyitems.HorizontalRule())
             body_items.append(bodyitems.FlavorText(self.flavor))
         return body_items
     
