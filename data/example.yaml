@@ -1,0 +1,123 @@
+# These are being stored as multiple YAML documents but they could easily be a single document with multiple groups
+# or several different files
+# It might be worth looking up YAML, but it's usually pretty self explanatory I think
+---
+default: # Data files are made of Groups; they're lists of entries with optional shared default properties
+  type: cost # The only default value that the Augmented costs all share is that they're all costs; no need to specify it for all of them
+contents:
+  - id: [Bone, Bones] # Everything can be given multiple IDs, to allow multiple valid names for things
+    name: Bones
+    icon: 'assets/cost/bone.png'
+    fold: 5 # Bones fold into the terse cost rendering mode at 5
+  - name: Blood # If something has no specified ID, it automatically goes into the system by it's name
+    icon: 'assets/cost/blood.png'
+    fold: 5 # Not that the name of costs actually means much of anything; this is more as an example than a legitimate use case
+  - name: Cells
+    fold: 5
+    icon: 'assets/cost/overcharge.png'
+  - name: Energy
+    fold: 5
+    icon: 'assets/cost/energy.png'
+  - id: ['Ruby', 'Orange']
+    name: Ruby
+    fold: 4
+    icon: 'assets/cost/ruby.png'
+  - id: ['Sapphire', 'Blue']
+    name: Sapphire
+    fold: 4
+    icon: 'assets/cost/sapphire.png'
+  - id: ['Emerald', 'Green']
+    name: Emerald
+    fold: 4
+    icon: 'assets/cost/emerald.png'
+  - name: Prism
+    fold: 4
+    icon: 'assets/cost/prism.png'
+---
+default:
+  type: sigil
+contents:
+  - name: Blue Gem
+    body: This card provides one blue gem.
+    icon: assets/sigils/Blue Gem.png
+  - name: Green Gem
+    body: This card provides one green gem.
+    icon: assets/sigils/Green Gem.png
+  - name: Orange Gem
+    body: This card provides one orange gem.
+    icon: assets/sigils/Orange Gem.png
+  - name: Magnificent Gem
+    body: This card provides 3 gems of any colors.
+    icon: assets/sigils/Magnificent Gem.png
+  - name: Bone Digger
+    body: During your end step, gain 1 bone.
+    icon: assets/sigils/Bone Digger.png
+  - name: Fledgling 
+    # This is the full fat python string.format; should be mostly safe since you're running it locally
+    body: During your draw step, discard this card and search and place a {token} in its space. It inherits any added sigils and marks, and starts with the same amount of health missing.
+    icon: assets/sigils/Fledgling.png
+  - name: Haunter
+    body: After this card perishes, the next card to enter the space it perished in gains all the sigils it had, excluding this one.
+    icon: assets/sigils/Haunter.png
+  - name: Brittle
+    body: If this card attacked this turn, it perishes during your end step.
+    icon: assets/sigils/Brittle.png
+
+---
+  # Gonna define a conditional and a trait, just for the sake of completeness
+contents:
+  - type: trait
+    name: Bloodless
+    body: This card cannot be sacrificed.
+  - type: conditional
+    id: RAINBOW
+    image: assets/misc/RAINBOW.png
+---
+  # Cards are the most complex entry type for hopefully obvious reasons
+default:
+  type: card
+  power: 0
+  format: Augmented Printer Example
+contents:
+  - type: group # Groups nest arbitrarily, although a group will inherit any default values, so we have to specify that they're a group
+    default:   # to override the type: card default
+      temple: Undead
+      accentcolor: [90, 92, 76]
+    contents:
+      - type: group
+        default:
+          rarity: Common
+          background: assets/bg/bg_common_undead.png
+          frame: assets/frames/frame_common_undead.png
+        contents:
+          - type: card
+            name: Spirit Orb
+            portrait: assets/art/Spirit Orb.png
+            health: 1
+            cost: [3 Bones]
+            tribes: [Spectre]
+            body:
+              - Haunter
+              - Blue Gem
+            flavor: Even the lowliest of spirits have use.
+            artist: Pixel Profligate
+          - name: Sarcophagus
+            portrait: assets/art/Sarcophagus.png
+            health: 2
+            cost: [4 Bones]
+            tribes: [Possessed]
+            artist: Pixel Profligate
+            body:
+              - parent: Fledgling
+                token: Mummy Lord 
+            flavor: Traps an evil on the verge of escape.
+          - name: Revenant
+            portrait: assets/art/Revenant.png
+            power: 3 # Default values can still be overrided per-card
+            health: 1
+            cost: [3 Bones]
+            tribes: [Skeleton]
+            artist: Pixel Profligate
+            body:
+              - Brittle
+            flavor: A bringer of death and renderer of flesh.
