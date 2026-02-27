@@ -3,7 +3,7 @@ import json
 from typing import Iterable
 from printer.parse import Card
 
-def cards_to_json(cards : Iterable[Card], printing_nane : str='AUG') -> str:
+def cards_to_json(cards : Iterable[Card], printing_name : str='AUG') -> str:
     store = {
         'config': {
             'default_back': '[Replace with actual default back url]',
@@ -18,7 +18,7 @@ def cards_to_json(cards : Iterable[Card], printing_nane : str='AUG') -> str:
             'id': card.name,
             'name': card.name,
             'printings': {
-                printing_nane: card.name,
+                printing_name: card.name,
             }
         })
     return json.dumps(store)
