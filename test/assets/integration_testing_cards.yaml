@@ -1,0 +1,105 @@
+# These definitions make the cards used for the project's automated testing
+# Unless you're looking to poke around in the source, these shouldn't be
+# relevant to what you're doing.
+# Test cost definitions
+---
+default:
+  type: cost
+contents:
+  - id: [Cells, Cell]
+    name: Cells
+    icon: assets/cost/overcharge.png
+    fold: 5
+  - name: Energy
+    icon: assets/cost/energy.png
+    fold: 5
+
+# Test conditional definitions
+---
+default:
+  type: conditional
+contents:
+  - id: LATCH
+    image: assets/misc/LATCH.png
+  - id: CELL
+    image: assets/misc/CELL.png
+
+# Test sigil definitions
+---
+default:
+  type: sigil
+contents:
+  - name: Testing Sigil
+    body: This is a test of the basic sigil rendering.
+    icon: assets/sigils/Bone Digger.png
+  - name: Token Sigil
+    body: "Class today we're doing token painting. Kid named {token}:"
+    icon: assets/sigils/Frozen Away.png
+  - name: Colorful Sigil
+    body: This sigil has an alternate icon to use when it's rendered in white.
+    icon: assets/sigils/Battery Bearer.png
+    invertedicon: assets/sigils/Battery Bearer_outline.png
+# I think that's all the weird sigil properties? Tokens are handled by the body. 
+
+# Test trait definitions
+---
+default:
+  type: trait
+contents:
+  - name: Bloodless
+    body: This card cannot be sacrificed.
+
+# Test card definitions
+---
+default:
+  type: card
+  rarity: Uncommon
+  temple: Undead
+  tribes: [Canine, Wizard]
+  portrait: assets/art/Skeleton.png
+  background: assets/bg/bg_common_undead.png
+  frame: assets/frames/frame_common_undead.png
+  artist: PixelProfligate
+  accentcolor: [90, 92, 76]
+  power: 1
+  health: 4
+contents:
+  - id: CostRender
+    name: Cost Rendering
+    costs: [4 Cells, 8 Energy]
+    flavor: 'This card tests for correct cost rendering in the integration tests'
+  - id: SigilRender
+    name: Sigil Rendering
+    flavor: 'This card tests that sigil rendering works.'
+    body:
+      - Testing Sigil
+  - id: TokenRender
+    name: Token Rendering
+    flavor: 'This card tests that sigil tokenization works correctly'
+  - type: group
+    default:
+      flavor: 'This card tests if nested default values are functional'
+      body:
+        - Testing Sigil
+    contents:
+      - id: DefaultTest
+        name: Default Nesting    
+  - id: ConditionalRender
+    name: Conditional Rendering
+    flavor: 'This card tests conditional rendering (both kinds)'
+    body:
+      - parent: LATCH
+        contents:
+          - Testing Sigil
+      - CELL
+  - id: TraitRender
+    name: Trait Rendering
+    flavor: 'This card tests trait rendering'
+    body:
+      - type: trait
+        body: 'I figure traits are usually going to be specified bespoke'
+      - Bloodless
+# I'll make more card definitions as they become relevant
+
+
+    
