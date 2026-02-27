@@ -282,11 +282,12 @@ class Trait(BodyItem): #MARK: Trait
         The text to be drawn
     """
 
-    def __init__(self, text: str, bodyfont: text.TextStyle|None = None) -> None:
+    def __init__(self, body: str, bodyfont: text.TextStyle|None = None,
+                 **kwargs) -> None:
         # Helper function that only sets the font if we were provided one
         self.set_font(bodyfont, 'body')
         # Wrap the text in advance
-        self.text = self.fonts['body'].wrap(text, w = 830) #TODO More magic numbers
+        self.text = self.fonts['body'].wrap(body, w = 830) #TODO More magic numbers
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
         # Unpack the bounding box to make it more convenient to use
