@@ -99,13 +99,13 @@ def card_parsing_test(path : str, name : str | None = None,
             results[card.name] = card.print(parser.context)
     if save:
         for name, card in results.items():
-            card.save('output/{}'.format(name))
+            card.save('output/{}.png'.format(name))
     else:
         for card in results.values():
             card.show()
     if json:
         logger.info(cards_to_json(parser.cards))
 
-card_parsing_test('data/test.yaml')
+card_parsing_test('data/test_suite_cards.yaml', save=True, json=True)
 
 input('pause lol')
