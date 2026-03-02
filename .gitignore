@@ -16,3 +16,6 @@ printerconfig.ini
 
 # pytest framework
 .pytest_cache
+
+# augmented specific data
+data/augmented
