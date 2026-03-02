@@ -17,6 +17,7 @@ def home() -> tuple[Callable, tuple]:
 1) Print card by name
 2) Print card by name, repeatedly
 3) Print all cards in format
+4) Utilities
 0) Exit
 >"""):
         case '1': # Single card
@@ -25,9 +26,28 @@ def home() -> tuple[Callable, tuple]:
             return single_card, (True,)
         case '3':
             return dump_format, ()
+        case '4':
+            return utilities, ()
         case '0':
             raise SystemExit
     return home, ()
+
+def utilities():
+    match input("""===Utilities===
+1) List all loaded cards
+0) Return
+>"""):
+        case '1':
+            return count_cards, ()
+        case '0':
+            return home, ()
+
+def count_cards():
+    format = utils.load_documents()
+    for card in format.cards.cards:
+        print(card.name)
+    print(f'{len(format.cards.cards)} cards registered.')
+    return utilities, ()
 
 def single_card(interactive : bool, 
                 card_name : str | None = None) -> tuple[Callable, tuple]:
