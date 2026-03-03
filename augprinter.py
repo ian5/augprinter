@@ -1,5 +1,6 @@
 from typing import Callable
 from sys import stderr
+from os.path import isfile
 from loguru import logger
 from printer import utils, config, parse
 
@@ -35,18 +36,52 @@ def home() -> tuple[Callable, tuple]:
 def utilities():
     match input("""===Utilities===
 1) List all loaded cards
+2) List missing portraits
+3) List missing sigil icons
 0) Return
 >"""):
         case '1':
             return count_cards, ()
+        case '2':
+            return missing_art, ()
+        case '3':
+            return missing_sigils, ()
         case '0':
             return home, ()
+    print('no dumbass thats not one of the options')
+    return utilities, ()
 
 def count_cards():
     format = utils.load_documents()
     for card in format.cards.cards:
         print(card.name)
     print(f'{len(format.cards.cards)} cards registered.')
+    return utilities, ()
+
+def missing_art():
+    count = 0 
+    format = utils.load_documents()
+    for card in format.cards.cards:
+        if not isfile(card.portrait):
+            count += 1
+            print(card.name)
+    if count > 0:
+        print(f'{count} portraits missing.')
+    else:
+        print('No missing art!')
+    return utilities, ()
+
+def missing_sigils():
+    count = 0
+    format = utils.load_documents()
+    for sigil in format.context.sigils.values():
+        if not isfile(sigil['icon']):
+            count += 1
+            print(sigil['name'])
+    if count > 0:
+        print(f'{count} icons missing.')
+    else:
+        print('No missing icons!')
     return utilities, ()
 
 def single_card(interactive : bool, 
