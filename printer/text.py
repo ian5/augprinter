@@ -113,23 +113,21 @@ class TextStyle:
         x = first_line_offset
         lines = []
         current_line = []
-        # Split the line by spaces, then add a space to each word, to account
-        # for the one we ate in the split
-        for word in (n+' ' for n in text.split()): 
-            # Find the length of the word...
-            length = self.get_length(word)
-            # And if it's bigger than the remaining space on this line...
-            if x + length > w:
+        # Split the line by spaces
+        for word in text.split(): 
+            # If the word is bigger than the remaining space on this line...
+            if x + self.get_length(word) > w:
                 # We're done with this line; append it to the finished list
                 lines.append(''.join(current_line))
                 # Reset the current line
                 current_line = []
                 # And reset the space left on the current line
                 x = 0
-            # Whether it is or not, now we add that word's width to our current
-            # line
-            x += length
-            # And add the word itself to the curret line.
+            # Now that we know the word fits without it, we put the space back
+            word += ' '
+            # The line gets longer by the length of the word and space
+            x += self.get_length(word)
+            # Add the word itself to the curret line.
             current_line.append(word)
         # We know there will always be at least one word on a line that isn't
         # wrapped, because for a wrap to happen, such a word must exist
