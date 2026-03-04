@@ -94,7 +94,7 @@ class Sigil(BodyItem): #MARK: Sigil
         # If we're in an infobox make the text show up on a black background
         text_color = (255,255,255) if blacked else (0,0,0) # lol
 
-        lines = self.get_wrapped_lines()
+        lines = self.get_wrapped_lines(box)
         titlewidth = self.get_title_width()
 
         # If the sigil text is one line long, it needs centered vertically
@@ -122,13 +122,20 @@ class Sigil(BodyItem): #MARK: Sigil
     def get_height(self, box: tuple[int, int, int ,int]) -> int:
         # 40px per line of text, sigils are a minimum of 2 lines tall even
         # if they only have one line of text
-        return 40*max(2, len(self.get_wrapped_lines()))
+        return 40*max(2, len(self.get_wrapped_lines(box)))
     
-    def get_wrapped_lines(self) -> list[str]:
+    def get_wrapped_lines(self, box: tuple[int, int, int, int]) -> list[str]:
         # TODO: Magic number
         text = self.get_body_text()
-        return self.fonts['body'].wrap(text, w=750,
+        return self.fonts['body'].wrap(text, w=self.get_body_width(box),
             first_line_offset=self.get_title_width())
+
+    @classmethod
+    def get_body_width(cls, box: tuple[int, int, int, int]) -> int:
+        """Returns the width for body text given the bounding box"""
+        x, y, w, h = box
+        return w-70 # pretend this is more complicated and taking into account
+        # extra customization options
 
     def get_body_text(self) -> str:
         """Get the raw body text"""
