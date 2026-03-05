@@ -207,7 +207,7 @@ class Card(): # MARK: Card
         elif 'Conduit' in self.tribes:
             self.decals.append(['assets/misc/conduit_large.png', [40, 840]])
 
-    def sigil_test(self, name : str) -> bool: # TODO: Check for bespoke sigils
+    def sigil_test(self, name : str) -> bool: 
         """Check that this card contains a given sigil reference"""
         test = name in self.raw_body
         logger.debug('Sigil test {} returned {}'.format(name, test))
