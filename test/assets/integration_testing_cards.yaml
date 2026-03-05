@@ -66,7 +66,7 @@ default:
 contents:
   - id: CostRender
     name: Cost Rendering
-    costs: [4 Cells, 8 Energy]
+    cost: [4 Cells, 8 Energy]
     flavor: 'This card tests for correct cost rendering in the integration tests'
   - id: SigilRender
     name: Sigil Rendering

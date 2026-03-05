@@ -154,7 +154,7 @@ class Card(): # MARK: Card
         self.flavor = raw.get('flavor', None)
         self.artist = raw.get('artist', 'No Artist')
         # TODO: Validate these properly instead of just assuming they're fine
-        self.raw_costs = cast(list, raw.get('costs', []))
+        self.raw_costs = cast(list, raw.get('cost', []))
         self.tribes = cast(list | None, raw.get('tribes', None)) 
         self.power = str(raw.get('power', 0))
         self.health = str(raw.get('health', 0))
