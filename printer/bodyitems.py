@@ -249,7 +249,6 @@ class InfoBox(PixelAligned): #MARK: InfoBox
         return self.pixel_align(content_height+y) - y + 30
 
 class Conditional(PixelAligned): #MARK: Conditional
-    #TODO: Move child rendering to runtime
     """Draws a conditional. Can have children in an Infobox
 
     Parameters
@@ -342,10 +341,16 @@ class FlavorText(Text): #MARK: FLavorText
         self.args = {'anchor': 'ma', 'align': 'center'} | kwargs
     
     def get_line_position(self, line: int, 
-                          box: tuple[int, int, int, int]) -> tuple[int, int]:
+                          box: BoundingBox) -> tuple[int, int]:
         x, y, w, h = box
         # The print position is horizontally centered
         return (x + w//2, y + 35*line)
+
+    def get_wrapped_lines(self, box: BoundingBox):
+        # Hacky way to give specifically Hourglass Sycophant some extra room
+        # TODO: I dont even know what to do about this but i shouldn't forget 
+        x, y, w, h = box
+        return super().get_wrapped_lines((x, y, w+12, h))
 
 # Having a list of all bodyitems is useful
 # This does it with introspection because I am lazy
