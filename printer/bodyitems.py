@@ -199,48 +199,54 @@ class InfoBox(PixelAligned): #MARK: InfoBox
 #TODO: make this play nice with more bodyitems it fucks up flavortext apparently
     def __init__(self, children : Sequence[BodyItem]):
         self.children = list(children)
-        # TODO: kill an magic number
 
+    def draw_children(self, box: BoundingBox) -> tuple[Image.Image, int]:
+        # TODO: kill an magic number
         # We're drawing this boxes contents now, rather than at render time
-        self.contents = Image.new('RGBA', (1120,1560))
-        self.content_height = 0
+        contents = Image.new('RGBA', (1120,1560))
+        content_height = 0
 
         # We need to know how tall the actual image content is
         for child in self.children:
             # Prepare the arguments in a dictionary so that we can modify them
             # for special case rendering
-            arguments = {"image": self.contents,
-                         "box": (0, self.content_height, 750, 1560)}
+            arguments = {"image": contents,
+                         "box": (0, content_height, 750, 1560)}
             # If the contents are a sigil then they should be rendered inverted
             if isinstance(child, Sigil):
                 arguments["blacked"] = True
-            self.content_height += child.draw(**arguments)
+            content_height += child.draw(**arguments)
+        return contents, content_height
 
-    def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
+    def draw(self, image: Image.Image, box: BoundingBox) -> int:
         # Unpack the bounding box to make it more convenient to use
         x, y, w, h = box
         # Since every infobox uses the darkbox, we cache it
         container = open_image_cached('assets/builtin/darkbox.png')
+        # Draw the kids now so we know how tall they are
+        contents, content_height = self.draw_children(box)
         # Find a pixel aligned position, so we can render to the lores grid
         py = self.pixel_align(y)
         # Crop the container background down to fit our content
         container_section = container.crop((0,0,container.width,
-                                            self.content_height+30))
+                                            content_height+30))
         # And paste it
         image.alpha_composite(container_section, (0, py))
         # Then paste the bottom edge of the container at the bottom
         image.alpha_composite(open_image_cached(
             'assets/builtin/darkbox_end.png'),
-            (0, self.pixel_align(self.content_height+py+10)))
+            (0, self.pixel_align(content_height+py+10)))
         # And paste the contents we rendered earlier on top
-        image.alpha_composite(self.contents,(x,py+20))
+        image.alpha_composite(contents,(x,py+20))
         # Return how tall this thing is, so that other code can stack them
         return self.get_height(box)
 
     def get_height(self, box: tuple[int, int, int ,int]) -> int:
         x, y, w, h = box
+        # We need to know how tall the children are for this
+        _, content_height = self.draw_children(box)
         # Height of the content aligned to the pixel grid, with some extra room
-        return self.pixel_align(self.content_height+y) - y + 30
+        return self.pixel_align(content_height+y) - y + 30
 
 class Conditional(PixelAligned): #MARK: Conditional
     #TODO: Move child rendering to runtime
@@ -250,19 +256,19 @@ class Conditional(PixelAligned): #MARK: Conditional
     ----------
     image : Image or str
         The conditional image
-    contents : Sequence[BodyItem]
+    children : Sequence[BodyItem]
         The things to put in the conditionals infobox; renders if non empty.
     """
 
     def __init__(self, image: Image.Image | str, 
-                 contents: Sequence[BodyItem] = [], **kwargs): 
+                 children: Sequence[BodyItem] = [], **kwargs): 
         # TODO: make these render actual text maybe?
         self.image = image
         # We need to know the image height to find the total height of the item
         with get_image(self.image) as img:
             self.image_height = img.height
-        self.contents = list(contents)
-        self.box = InfoBox(self.contents)
+        self.children = list(children)
+        self.box = InfoBox(self.children)
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
         # Unpack the bounding box to make it more convenient to use
@@ -270,15 +276,15 @@ class Conditional(PixelAligned): #MARK: Conditional
         # Paste the image, aligned to the next lores pixel
         with get_image(self.image) as img:
             image.alpha_composite(img, (0, self.pixel_align(y)))
-        # We'll draw the contents infobox one pixel down
+        # We'll draw the children infobox one pixel down
         offset = self.image_height + 10
-        # If this conditional has contents...
-        if self.contents:
-            # ...then render the contents box, and keep track of how far down
+        # If this conditional has children...
+        if self.children:
+            # ...then render the children box, and keep track of how far down
             # we've rendered things 
             offset += self.box.draw(image, (x, self.pixel_align(y+offset),
                                             750, 1156))
-        # Return the total height of the conditional and any contents
+        # Return the total height of the conditional and any children
         return offset# TODO: move to a get_height method
 
 class Text(BodyItem): #MARK: Text
@@ -341,6 +347,9 @@ class FlavorText(Text): #MARK: FLavorText
         # The print position is horizontally centered
         return (x + w//2, y + 35*line)
 
+# Having a list of all bodyitems is useful
+# This does it with introspection because I am lazy
+# https://stackoverflow.com/questions/3862310/how-to-find-all-the-subclasses-of-a-class-given-its-name
 def all_subclasses(cls):
     return {cls}.union(s for c in cls.__subclasses__() 
                        for s in all_subclasses(c))

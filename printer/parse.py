@@ -81,15 +81,22 @@ class CardContext: #MARK: CardContext
     def parse_conditional(self, raw : MutableMapping) -> bodyitems.Conditional:
         """Parse a Conditional from dictionary, including contents"""
         # We need to build the contents now if they were given here
-        contents = []
-        if 'contents' in raw:
-            for item in raw['contents']:
-                contents.append(self.get_body_item(item))
+        children = []
+        # If we have any children
+        if 'children' in raw:
+            # Look each child up as a body item
+            children = [self.get_body_item(item) for item in raw['children']]
         # I know the type hint looks silly here, but having part of the mapping
         # be a list scared the linter when passing to the method expecting 
         # a string argument down there
-        amended : ChainMap = ChainMap({'contents': contents}, raw)
+        amended : ChainMap = ChainMap({'children': children}, raw)
         return bodyitems.Conditional(**amended)
+
+    def parse_infobox(self, raw : MutableMapping) -> bodyitems.InfoBox:
+        """Parse an infobox from dictionary"""
+        # Look each child up as a body item
+        children = [self.get_body_item(item) for item in raw['children']]
+        return bodyitems.InfoBox(children)
     
     def parse_body_item(self, raw : MutableMapping) -> bodyitems.BodyItem:
         """Parse a BodyItem, attempting to guess type if unspecified."""
@@ -109,6 +116,8 @@ class CardContext: #MARK: CardContext
                 return self.parse_trait(raw)
             case 'conditional':
                 return self.parse_conditional(raw)
+            case 'infobox':
+                return self.parse_infobox(raw)
             case err:
                 logger.error('Unknown body item type {}.'.format(err))
                 raise TypeError
@@ -120,7 +129,7 @@ class CardContext: #MARK: CardContext
         # If we have any default values, we need to fetch them
         if 'parent' in raw:
             try:
-                # assuming that raw['parent'] should always work
+                # Get the default values from the parent
                 defaults = self.body_items[raw['parent']]
             except KeyError:
                 logger.error('No body item named {} found'.format(raw['parent']))
@@ -237,24 +246,27 @@ class Card(): # MARK: Card
         sigils = [] # Also conditionals
         traits = [] 
         # We need to track this so we know if we need to draw a seperator bar
-        last_sigil_is_conditional = False # this is super hacky
+        last_sigil_is_box = False # this is super hacky
         for item in self.raw_body:
             parsed = self.resolve_body_item(item, context)
             # We need to put the item we got back in the right place
             if isinstance(parsed, bodyitems.Sigil):
                 sigils.append(parsed)
-                last_sigil_is_conditional = False
+                last_sigil_is_box = False
             elif isinstance(parsed, bodyitems.Trait):
                 traits.append(parsed)
             elif isinstance(parsed, bodyitems.Conditional):
                 sigils.append(parsed)
-                last_sigil_is_conditional = True
-            elif parsed is None:
+                last_sigil_is_box = True
+            elif isinstance(parsed, bodyitems.InfoBox):
+                sigils.append(parsed)
+                last_sigil_is_box = True
+            else:
                 logger.warning('Unknown BodyItem type {} in card definition {}'
                                .format(item.get('type'), self.name))
         if (sigils # If we have sigils to render...
             and (traits or self.flavor) # Something to separate them from...
-            and (not last_sigil_is_conditional)): # And nothing in the way
+            and (not last_sigil_is_box)): # And nothing in the way
             # Add a seperator to the end of the sigil list
             sigils.append(bodyitems.HorizontalRule())
         # Concatenate the sections of the card

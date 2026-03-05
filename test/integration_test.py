@@ -24,6 +24,8 @@ def test_context_manager():
                  id='Trait Rendering'),
     pytest.param('DefaultTest', 'test/example/cards/Default Nesting.png', 
                  id='Default Nesting'),
+    pytest.param('InfoBoxRender', 'test/example/cards/InfoBox Rendering.png', 
+                 id='InfoBox Rendering'),
 ])
 def test_fullprocess(test_context_manager, card_id, standard_image):
     image = test_context_manager.print(card_id)

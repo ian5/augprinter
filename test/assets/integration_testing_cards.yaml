@@ -89,7 +89,7 @@ contents:
     flavor: 'This card tests conditional rendering (both kinds)'
     body:
       - parent: LATCH
-        contents:
+        children:
           - Testing Sigil
       - CELL
   - id: TraitRender
@@ -99,6 +99,13 @@ contents:
       - type: trait
         body: 'I figure traits are usually going to be specified bespoke'
       - Bloodless
+  - id: InfoBoxRender
+    name: InfoBox Rendering
+    flavor: This card tests rendering of bare infoboxes
+    body:
+      - type: infobox
+        children:
+          - Testing Sigil
 # I'll make more card definitions as they become relevant
 
 
