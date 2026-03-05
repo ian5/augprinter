@@ -15,10 +15,10 @@ def cards_to_json(cards : Iterable[Card], printing_name : str='AUG') -> str:
     card_store = store['cards']
     for card in cards:
         card_store.append({
-            'id': card.name,
+            'id': [card.name],
             'name': card.name,
             'printings': {
-                printing_name: card.name,
+                printing_name: {'front': card.name},
             }
         })
     return json.dumps(store)
