@@ -1,11 +1,13 @@
-from typing import Sequence
+from typing import Sequence, Type
 from PIL import Image
 from PIL import ImageDraw
 from loguru import logger
 from printer import text
 from printer.loaders import open_image_cached, get_image
 
-class BodyItem:
+BoundingBox = tuple[int, int, int, int]
+
+class BodyItem: # MARK: BodyItem
     # Expose a method to set class default fonts, so that the config module
     # doesn't have to play with the attributes directly
     @classmethod
@@ -15,7 +17,7 @@ class BodyItem:
     # Each subclass needs its own set of default fonts
     def __init_subclass__(cls):
         # So we make a new dictionary for each subclass
-        cls.fonts = {}
+        cls.fonts : dict[str, text.TextStyle] = {}
 
     # You can also change a specific instance's font, if you'd like
     def set_font(self, font: text.TextStyle | None, name : str) -> None:
@@ -124,13 +126,13 @@ class Sigil(BodyItem): #MARK: Sigil
         # if they only have one line of text
         return 40*max(2, len(self.get_wrapped_lines(box)))
     
-    def get_wrapped_lines(self, box: tuple[int, int, int, int]) -> list[str]:
+    def get_wrapped_lines(self, box: BoundingBox) -> list[str]:
         text = self.get_body_text()
         return self.fonts['body'].wrap(text, w=self.get_body_width(box),
             first_line_offset=self.get_title_width())
 
     @classmethod
-    def get_body_width(cls, box: tuple[int, int, int, int]) -> int:
+    def get_body_width(cls, box: BoundingBox) -> int:
         """Returns the width for body text given the bounding box"""
         x, y, w, h = box
         return w-70 # pretend this is more complicated and taking into account
@@ -279,74 +281,68 @@ class Conditional(PixelAligned): #MARK: Conditional
         # Return the total height of the conditional and any contents
         return offset# TODO: move to a get_height method
 
-class Trait(BodyItem): #MARK: Trait
+class Text(BodyItem): #MARK: Text
     """Draws a piece of text.
-
+    
     Parameters
     ----------
-    text : str
-        The text to be drawn
-    """
-
-    def __init__(self, body: str, bodyfont: text.TextStyle|None = None,
-                 **kwargs) -> None:
+    body : str
+        The text to be drawn.
+    bodyfont : text.TextStyle = None
+        The TextStyle to draw the text with
+    **kwargs
+        Additional arguments are passed to the PIL print calls"""
+    def __init__(self, body: str, bodyfont: text.TextStyle|None = None, 
+                 **kwargs):
         # Helper function that only sets the font if we were provided one
         self.set_font(bodyfont, 'body')
-        # Wrap the text in advance
-        self.text = self.fonts['body'].wrap(body, w = 830) #TODO More magic numbers
+        self.text = body
+        self.args = kwargs
+    
+    def get_wrapped_lines(self, box : BoundingBox):
+        """Return the lines of the body text, wrapped within a bounding box"""
+        return self.fonts['body'].wrap(self.text, box[2])
+    
+    def get_height(self, box : BoundingBox):
+        return len(self.get_wrapped_lines(box))*35+5
 
-    def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
-        # Unpack the bounding box to make it more convenient to use
+    def get_line_position(self, line : int, 
+                          box : BoundingBox) -> tuple[int, int]:
         x, y, w, h = box
-        # We need an ImageDraw to render the text
+        return (x, y + 35*line)
+
+    def draw(self, image: Image.Image, box : BoundingBox):
+        # Unpack the bounding box 
+        x, y, w, h = box
+        # Make a drawing object for the image we got
         draw = ImageDraw.Draw(image)
-        # Draw each line in order
-        for i, line in enumerate(self.text):
-            self.fonts['body'].print_line(line, draw, (x, y+35*i), 
-                                          fill=(0,0,0), anchor="la")
-        # Return the height so that other code can stack these
+        # For each wrapped line
+        for i, line in enumerate(self.get_wrapped_lines(box)):
+            # Print the line in its position, plus any extra arguments
+            self.fonts['body'].print_line(line, draw, 
+                self.get_line_position(i, box), (0,0,0), **self.args)
         return self.get_height(box)
 
-    def get_height(self, box: tuple[int, int, int ,int]) -> int:
-        # Each line of text is 40px tall
-        return 40*len(self.text)
+class Trait(Text): #MARK: Trait
+    def __init__(self, body: str, bodyfont: text.TextStyle|None = None,
+                **kwargs):
+        super().__init__(body, bodyfont, **{'anchor': 'la'} | kwargs)
 
-class FlavorText(BodyItem): #MARK: FlavorText
-    """Draws a piece of text, centered and italic.
-
-    Parameters
-    ----------
-    text : str
-        The text to be drawn
-    """
-
-    def __init__(self, text, bodyfont: text.TextStyle|None = None) -> None:
-        # Helper function that only sets the font if we were provided one
+class FlavorText(Text): #MARK: FLavorText
+    def __init__(self, body: str, bodyfont: text.TextStyle|None = None,
+                **kwargs):
         self.set_font(bodyfont, 'body')
-        self.text = text
-
-    def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
-        # Unpack the bounding box to make it more convenient to use
+        self.text = body
+        self.args = {'anchor': 'ma', 'align': 'center'} | kwargs
+    
+    def get_line_position(self, line: int, 
+                          box: tuple[int, int, int, int]) -> tuple[int, int]:
         x, y, w, h = box
-        center = x + w/2
-        # We need an ImageDraw to render the text
-        draw = ImageDraw.Draw(image)
-        # Wrap the text
-        lines = self.get_wrapped_lines(box)
-        # Draw each line in order, centered.
-        self.fonts['body'].print_line('\n'.join(lines), draw, (center,y),
-                                      fill=(0,0,0), anchor="ma",align='center')
-        #TODO magic number reduction
-        # Return the height so that other code can stack these
-        return self.get_height(box)# Technically not needed for aug cards but feels prudent
+        # The print position is horizontally centered
+        return (x + w//2, y + 35*line)
 
-    def get_wrapped_lines(self, box: tuple[int, int, int, int]):
-        return self.fonts['body'].wrap(self.text, w=box[2])
+def all_subclasses(cls):
+    return {cls}.union(s for c in cls.__subclasses__() 
+                       for s in all_subclasses(c))
 
-    def get_height(self, box: tuple[int, int, int ,int]) -> int:
-        # Each line of text is 40px tall
-        return 40*len(self.text)
-
-# A dictionary with every available body item has turned out to be worth having
-# in a few places, so we do that here instead of in several different places.
-body_items = {i.__name__: i for i in BodyItem.__subclasses__()}
+body_items = {i.__name__: i for i in all_subclasses(BodyItem)}
