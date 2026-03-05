@@ -125,7 +125,6 @@ class Sigil(BodyItem): #MARK: Sigil
         return 40*max(2, len(self.get_wrapped_lines(box)))
     
     def get_wrapped_lines(self, box: tuple[int, int, int, int]) -> list[str]:
-        # TODO: Magic number
         text = self.get_body_text()
         return self.fonts['body'].wrap(text, w=self.get_body_width(box),
             first_line_offset=self.get_title_width())
@@ -324,20 +323,25 @@ class FlavorText(BodyItem): #MARK: FlavorText
     def __init__(self, text, bodyfont: text.TextStyle|None = None) -> None:
         # Helper function that only sets the font if we were provided one
         self.set_font(bodyfont, 'body')
-        # Wrap the text in advance
-        self.text = self.fonts['body'].wrap(text, 830)
+        self.text = text
 
     def draw(self, image: Image.Image, box: tuple[int, int, int ,int]) -> int:
         # Unpack the bounding box to make it more convenient to use
         x, y, w, h = box
+        center = x + w/2
         # We need an ImageDraw to render the text
         draw = ImageDraw.Draw(image)
+        # Wrap the text
+        lines = self.get_wrapped_lines(box)
         # Draw each line in order, centered.
-        self.fonts['body'].print_line('\n'.join(self.text), draw, (560,y),
+        self.fonts['body'].print_line('\n'.join(lines), draw, (center,y),
                                       fill=(0,0,0), anchor="ma",align='center')
         #TODO magic number reduction
         # Return the height so that other code can stack these
         return self.get_height(box)# Technically not needed for aug cards but feels prudent
+
+    def get_wrapped_lines(self, box: tuple[int, int, int, int]):
+        return self.fonts['body'].wrap(self.text, w=box[2])
 
     def get_height(self, box: tuple[int, int, int ,int]) -> int:
         # Each line of text is 40px tall
