@@ -155,7 +155,7 @@ class Card(): # MARK: Card
         self.artist = raw.get('artist', 'No Artist')
         # TODO: Validate these properly instead of just assuming they're fine
         self.raw_costs = cast(list, raw.get('costs', []))
-        self.tribes = cast(list, raw.get('tribes', [])) 
+        self.tribes = cast(list | None, raw.get('tribes', None)) 
         self.power = str(raw.get('power', 0))
         self.health = str(raw.get('health', 0))
         self.raw_body = cast(list, raw.get('body', []))
@@ -171,6 +171,7 @@ class Card(): # MARK: Card
     # Should replace this iwth real later
     def implications(self):
         """Apply some automatic decals for certain properties"""
+        if self.tribes is None: return
         # Mox band rendering
         if 'Mox' in self.tribes:
             # If we have the Prism Gem sigil
