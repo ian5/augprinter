@@ -375,5 +375,6 @@ class DataParser():
         """Prints every card stored in this parser."""
         output = {}
         for card in self.cards:
+            logger.info(f'Printing {card.name}...')
             output[card.name] = card.print(self.context)
         return output
