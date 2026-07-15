@@ -98,6 +98,16 @@ contents:
           - Testing Sigil
           - Testing Sigil
       - Testing Sigil
+  - id: TraitHeightTest
+    name: Trait Height Guy
+    portrait: assets/art/Tombstone.png
+    health: 1
+    flavor: this is just here to make that line render 
+    body:
+      - type: trait
+        #body: giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu 
+        body: giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu giyqu 
+        #body: giyqu giyqu giyqu
 # I'll make more card definitions as they become relevant
 
 

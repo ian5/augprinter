@@ -1,4 +1,7 @@
 ---
-format_schema: 'format_schemas/augmented.yaml'
-content: ['data/test.yaml']
-...
+format_schema: format_schemas/augmented.yaml
+content: 
+  - data/augmented/body_items.yaml
+  - data/augmented/cards.yaml
+  - data/augmented/conditionals.yaml
+  - data/augmented/costs.yaml

@@ -4,11 +4,16 @@ output/
 # vscode
 .vscode/
 printer/augprinter.code-workspace
+.VSCodeCounter/
 
 # python stuff
 .venv/
 __pycache__/
 *.pyc
+
+# binary packaging
+dist
+build
 
 # old code that i left in the workspace for convenience
 addtext.py
