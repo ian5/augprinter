@@ -1,5 +1,6 @@
 # generated
 output/
+dist/
 
 # vscode
 .vscode/
@@ -14,6 +15,7 @@ __pycache__/
 # binary packaging
 dist
 build
+augprinter.spec
 
 # old code that i left in the workspace for convenience
 addtext.py
