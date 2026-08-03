@@ -163,6 +163,7 @@ class Card(): # MARK: Card
         c = raw.get('accentcolor', False)
         if c:
             self.accentcolor = (c[0], c[1], c[2], 255)
+        self.printing = str(raw.get('printing', 'No Printing'))
         self.implications()
 
     def __str__(self) -> str:
@@ -220,7 +221,7 @@ class Card(): # MARK: Card
             tribes = self.tribes, power = self.power, health = self.health,
             costs = self.get_costs(context), accentcolor = self.accentcolor,
             body = self.get_body(context), artist = self.artist,
-            format = 'Card Loading Test', decals = self.decals)
+            format = self.printing, decals = self.decals)
 
     def get_costs(self, context : CardContext) -> list[Cost]:
         costs = []

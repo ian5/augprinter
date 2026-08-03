@@ -63,6 +63,7 @@ default:
   accentcolor: [90, 92, 76]
   power: 1
   health: 4
+  printing: Card Loading Test
 contents:
   - id: CostRender
     name: Cost Rendering
